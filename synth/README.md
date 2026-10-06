@@ -38,10 +38,10 @@ stability still need device testing.
    this fork's additions.
 3. Supply the **unmodified stock 5.52 `SP404MKII_APP1.bin`**, not our v4 binary
    or an existing DOOM image.
-4. Leave “Add four-voice Sound Generator” checked for the combined build.
-   Unchecking it produces the exact original ED5E image instead.
-   The Wave Lab V8 option is OFF by default; select it for all 17 new waves
-   with v8's raw-grit sound and retained fixes. Off preserves the original v4.
+4. Select “Sound Generator (4 voices + 17 new waves)” for the combined v8 build.
+   This single option is OFF by default. It includes both polyphony and all
+   17 new waves with v8's raw-grit sound and retained fixes. Unselected, it
+   produces the exact original ED5E image instead.
 5. Patch and download. Stock, DOOM and combined SHA-256 checks are performed
    locally; the browser does not upload your firmware.
 
@@ -71,7 +71,7 @@ Outputs default to ignored `out/doom-poly-v4/`; optional FM output goes to
 and it is copied without alteration. `--web` regenerates `synth-data.js`.
 It contains only the small overlay, not a complete firmware image.
 Do not use `--fm --web` unless you intend to include the additional optional
-overlay in the published data; the current page only selects stock/polyphony.
+overlay in the published data; the current page selects upstream DOOM or combined v8.
 
 For tests (PowerShell; use an absolute path):
 

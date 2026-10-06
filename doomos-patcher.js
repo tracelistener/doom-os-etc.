@@ -200,13 +200,10 @@ if (typeof module === 'object' && module.exports) {
       '</div>' +
       '<p class="status" id="status" role="status">Ready. No file loaded yet.</p>' +
       (window.DOOMOS_SYNTH ?
-        '<fieldset class="synth-choice"><legend>Experimental fork addition</legend>' +
-        '<label><input type="checkbox" id="synthPoly" checked> Add four-voice Sound Generator (poly-test-v4)</label>' +
-        '<p class="small">Shared controls, held-pad LEDs and static-chord REC. Experimental fork: back up first.</p>' +
-        (window.DOOMOS_WAVES ?
-          '<label><input type="checkbox" id="synthWaves"> Test Wave Lab v8 RAM (all 17 types; raw DUTY grit; needs polyphony)</label>' +
-          '<p class="small">No DUTY smoother or PolyBLEP. Retains v7 loudness, OCT note-off, ENV and release fixes. Raw knob jitter/aliasing is intentional. Hardware-unverified; CPU headroom is unmeasured.</p>' : '') +
-        '</fieldset>' : '') +
+        '<div class="synth-choice"><label><input type="checkbox" id="synthPoly"' +
+        (window.DOOMOS_WAVES ? '> Sound Generator (4 voices + 17 new waves)' :
+          ' checked> Sound Generator (4 voices)') +
+        '</label></div>' : '') +
       '<div class="actions">' +
       '<button type="button" class="btn" id="patch" disabled>Patch firmware</button>' +
       '<a class="btn" id="download" download="SP404MKII_APP1.bin" hidden>Download patched firmware ↓</a>' +
@@ -220,7 +217,6 @@ if (typeof module === 'object' && module.exports) {
     const status = $('status'), state = $('state');
     const patchBtn = $('patch'), download = $('download'), reset = $('reset');
     const synthPoly = $('synthPoly');
-    const synthWaves = $('synthWaves');
     const container = fromBase64(window.DOOMOS_PATCH);
     const versions = patchVersions(container);
     const supported = versions.map(v => v.label).join(' and ');
@@ -245,7 +241,6 @@ if (typeof module === 'object' && module.exports) {
       patchBtn.disabled = true;
       patchBtn.textContent = 'Patch firmware';
       if (synthPoly) synthPoly.disabled = false;
-      if (synthWaves) synthWaves.disabled = !synthPoly.checked;
       drop.classList.remove('bad');
     }
 
@@ -291,9 +286,8 @@ if (typeof module === 'object' && module.exports) {
     async function patch() {
       if (!source) return;
       const addPoly = synthPoly && synthPoly.checked;
-      const addWaves = addPoly && synthWaves && synthWaves.checked;
+      const addWaves = addPoly && !!window.DOOMOS_WAVES;
       if (synthPoly) synthPoly.disabled = true;
-      if (synthWaves) synthWaves.disabled = true;
       patchBtn.disabled = true;
       patchBtn.textContent = 'Patching …';
       state.textContent = 'Patching';
@@ -311,14 +305,13 @@ if (typeof module === 'object' && module.exports) {
         download.hidden = false;
         reset.hidden = false;
         patchBtn.hidden = true;
-        say('Done. DOOM OS' + (addPoly ? ' + experimental poly-test-v4' : '') +
-            (addWaves ? ' + 17 Wave Lab types (v8 RAM, raw DUTY grit)' : '') +
+        say('Done. DOOM OS' + (addPoly ? ' + Sound Generator (4 voices' +
+            (addWaves ? ', 17 new waves, v8)' : ')') : '') +
             ' has been patched into firmware ' + result.label + '. '
             + 'Download it and keep the name SP404MKII_APP1.bin.', 'ok');
         state.textContent = 'Complete';
       } catch (err) {
         if (synthPoly) synthPoly.disabled = false;
-        if (synthWaves) synthWaves.disabled = !synthPoly.checked;
         patchBtn.textContent = 'Patch firmware';
         refuse(err.message);
       }
@@ -351,9 +344,6 @@ if (typeof module === 'object' && module.exports) {
     input.addEventListener('change', () => take(input.files && input.files[0]));
     patchBtn.addEventListener('click', patch);
     reset.addEventListener('click', again);
-    if (synthPoly && synthWaves) synthPoly.addEventListener('change', () => {
-      synthWaves.disabled = !synthPoly.checked;
-    });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);

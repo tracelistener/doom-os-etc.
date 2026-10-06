@@ -187,13 +187,10 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
         <h2>Prepare your test update</h2>
         <ol class="steps">
           <li>Back up your samples, projects and settings. Keep the original Roland 5.52 update and your working build.</li>
-          <li>Load the unmodified stock 5.52 <code>SP404MKII_APP1.bin</code> above. Select Wave Lab to generate the 17-wave V8 RAM candidate. Leaving it OFF generates the original poly-v4 baseline, without v8's later fixes.</li>
+          <li>Load the unmodified stock 5.52 <code>SP404MKII_APP1.bin</code> above. Select Sound Generator for four voices and all 17 new waves together.</li>
           <li>Download the result as <code>SP404MKII_APP1.bin</code>. Use it with the unchanged official 5.52 <code>SP404MKII_APP0.bin</code> and your established SD-card update procedure.</li>
-          <li>For V8, start at modest LEVEL with one Sine, then FM1:1 and a DUTY sweep. Check release, OCT changes, FREQ, ENV and START/END. Then test types individually, followed by two and four voices and TYPE changes. Raw DUTY crackle and Sync/CZRes aliasing are intentional; unexpected stock distortion, runaway loudness or a hang are not. Save simultaneous sampler/effect/DOOM load for last.</li>
           <li>For chord REC, hold the chord while entering REC, then release and finish the normal destination workflow. Return to the known-good update for hangs, stuck notes or audio breakup.</li>
         </ol>
-        <p class="t">Uncheck Wave Lab to generate the preceding poly-v4 build. Uncheck polyphony to generate exact upstream DOOM OS. All stock waveforms, including Saw2, are retained; Pulse and Noise1/2 are 6 dB quieter in v8. To roll back to the smoother v7 sound, use your saved v7 firmware pair.</p>
-        <p class="t">Expected Wave Lab V8 APP1: 2,961,072 bytes. SHA-256:<br><code style="overflow-wrap:anywhere">12dbeae4c85722e3109aa2359102e8525c0c5e3729fb64126456abd83ae283c7</code></p>
       </div>
     </article>
   </main>
@@ -204,6 +201,6 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
 </div>
 <script src="synth-data.js?v=waves-v8-12dbeae4"></script>
 <script src="waves-data.js?v=waves-v8-12dbeae4"></script>
-<script src="doomos-patcher.js?v=waves-v8-12dbeae4"></script>
+<script src="doomos-patcher.js?v=synth-combined-v8"></script>
 </body>
 </html>

@@ -16,7 +16,8 @@ function load(includeSynth = true, includeWaves = false) {
   const elements = new Map();
   const get = id => {
     if (!elements.has(id)) elements.set(id, {
-      id, checked: id === 'synthPoly', hidden: false, disabled: false, value: '', listeners: {},
+      id, checked: id === 'synthPoly' && /id="synthPoly" checked/.test(elements.get('doomos-patcher')?.innerHTML || ''),
+      hidden: false, disabled: false, value: '', listeners: {},
       classList: { add() {}, remove() {} },
       addEventListener(event, fn) { this.listeners[event] = fn; },
       click() {},
@@ -76,7 +77,7 @@ async function choose(page, bytes, name = 'SP404MKII_APP1.bin') {
   assert.equal(page.get('synthPoly').disabled, true);
   assert.equal(page.get('download').hidden, false);
   assert.equal(digest(new Uint8Array(await page.blob().arrayBuffer())), merged.digest);
-  assert.match(page.get('status').textContent, /experimental poly-test-v4/);
+  assert.match(page.get('status').textContent, /Sound Generator \(4 voices\)/);
 
   page.get('reset').listeners.click();
   assert.equal(page.get('download').hidden, true);
@@ -109,8 +110,13 @@ async function choose(page, bytes, name = 'SP404MKII_APP1.bin') {
   assert.match(broken.get('status').textContent, /came out wrong/);
 
   const wavePage = load(true, true);
-  assert.equal(wavePage.get('synthWaves').checked,false,'candidate must not be selected by default');
-  assert.doesNotMatch(wavePage.get('doomos-patcher').innerHTML,/id="synthWaves" checked/);
+  assert.equal(wavePage.get('synthPoly').checked,false,'combined candidate remains opt-in');
+  const panel = wavePage.get('doomos-patcher').innerHTML;
+  assert.equal((panel.match(/type="checkbox"/g) || []).length,1,'one combined option');
+  assert.match(panel,/Sound Generator \(4 voices \+ 17 new waves\)/);
+  assert.doesNotMatch(panel,/synthWaves|Experimental fork addition|Shared controls|No DUTY smoother/);
+  const html = fs.readFileSync(path.join(root,'index.html'),'utf8');
+  assert.doesNotMatch(html,/For V8, start at modest LEVEL|Uncheck Wave Lab|Expected Wave Lab V8 APP1/);
   assert.equal(wavePage.context.window.DOOMOS_WAVES.revision,'v8-ram');
   assert.equal(wavePage.context.window.DOOMOS_WAVES.sha256,'12dbeae4c85722e3109aa2359102e8525c0c5e3729fb64126456abd83ae283c7');
   assert.equal(wavePage.context.window.DOOMOS_WAVES.size,2961072);
@@ -127,36 +133,29 @@ async function choose(page, bytes, name = 'SP404MKII_APP1.bin') {
   assert.equal(waveResult.bytes.length, wavePage.context.window.DOOMOS_WAVES.size);
   await choose(wavePage,stock);
   await wavePage.get('patch').listeners.click();
-  assert.equal(digest(new Uint8Array(await wavePage.blob().arrayBuffer())),merged.digest,'default returns working v4');
+  assert.equal(digest(new Uint8Array(await wavePage.blob().arrayBuffer())),doom.digest,'default returns original DOOM');
   wavePage.get('reset').listeners.click();
-  wavePage.get('synthWaves').checked = true;
+  wavePage.get('synthPoly').checked = true;
   await choose(wavePage,stock);
   await wavePage.get('patch').listeners.click();
   assert.equal(digest(new Uint8Array(await wavePage.blob().arrayBuffer())),waveResult.digest);
-  assert.match(wavePage.get('status').textContent,/17 Wave Lab types/);
-  assert.equal(wavePage.get('synthWaves').disabled,true);
+  assert.match(wavePage.get('status').textContent,/Sound Generator \(4 voices, 17 new waves, v8\)/);
+  assert.equal(wavePage.get('synthPoly').disabled,true);
   wavePage.get('reset').listeners.click();
-  wavePage.get('synthWaves').checked = false;
-  await choose(wavePage,stock);
-  await wavePage.get('patch').listeners.click();
-  assert.equal(digest(new Uint8Array(await wavePage.blob().arrayBuffer())),merged.digest);
-  wavePage.get('reset').listeners.click();
-  wavePage.get('synthWaves').checked = true;
+  assert.equal(wavePage.get('synthPoly').disabled,false);
+  assert.equal(wavePage.get('synthPoly').checked,true,'reset preserves chosen option');
   wavePage.get('synthPoly').checked = false;
-  wavePage.get('synthPoly').listeners.change();
-  assert.equal(wavePage.get('synthWaves').disabled,true);
   await choose(wavePage,stock);
   await wavePage.get('patch').listeners.click();
   assert.equal(digest(new Uint8Array(await wavePage.blob().arrayBuffer())),doom.digest);
   wavePage.get('reset').listeners.click();
   wavePage.get('synthPoly').checked = true;
-  wavePage.get('synthPoly').listeners.change();
-  assert.equal(wavePage.get('synthWaves').disabled,false);
   const corruptWave = waveOverlay.slice(); corruptWave[corruptWave.length-1] ^= 1;
   wavePage.context.window.DOOMOS_WAVES_PATCH = Buffer.from(corruptWave).toString('base64');
   await choose(wavePage,stock);
   await wavePage.get('patch').listeners.click();
   assert.equal(wavePage.blob(),null);
   assert.equal(wavePage.get('download').hidden,true);
-  console.log('PASS: shipped page/applier, stock DOOM, poly-v4 and 17-wave downloads, option dependency/reset, hash gates and corrupt-overlay rejection.');
+  assert.equal(wavePage.get('synthPoly').disabled,false,'failed patch unlocks combined option');
+  console.log('PASS: single combined option, exact stock DOOM/poly-v4/v8 downloads, reset, removed copy, hash gates and corrupt-overlay rejection.');
 })().catch(error => { console.error(error); process.exitCode = 1; });
