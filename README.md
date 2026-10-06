@@ -1,4 +1,4 @@
-# DOOM OS: a custom OS for the Roland SP-404MK2
+# Tracelistener's SP-404MKII synth patcher (DOOM OS fork)
 
 <p align="center">
   <img src="assets/doom-os-512.png" alt="DOOM OS">
@@ -12,14 +12,14 @@ Upstream base: 0.6.1-alpha, build ED5E (2026-10-04)
 
 This fork adds **experimental four-voice Sound Generator polyphony from our
 poly-test-v4 firmware**, plus **17 Wave Lab waveforms as types 15–31**.
-Open this fork's `index.html` locally to select polyphony and/or the waves;
-the official online patcher below builds upstream DOOM OS only. The combined
+Use [our online patcher](https://tracelistener.github.io/doom-os-etc./), or
+open this fork's `index.html` locally to select polyphony and/or the waves. The combined
 build has passed instruction-level and composition tests, **not hardware
 validation for the new waves**. The user reported the preceding DOOM/poly-v4
 build working. See [the integration notes](synth/README.md) and
 [new-wave build steps and test checklist](synth/WAVES.md).
 
-**[Quick installation: Use the web patcher to install DOOM OS](https://klangfeldlabs.com/doom-os/patcher)**
+**[Open our web patcher: DOOM OS + polyphony + 17 waves](https://tracelistener.github.io/doom-os-etc./)**
 
 ## Features
 
@@ -45,17 +45,17 @@ build working. See [the integration notes](synth/README.md) and
 
 ## How to install
 
-The easiest way to install DOOM OS is by using the web patcher:
+Use this fork's web patcher, which includes the new synth options:
 
-https://klangfeldlabs.com/doom-os/patcher
+https://tracelistener.github.io/doom-os-etc./
 
 You can also download this repository as a ZIP file (under the Code button), unzip it and open index.html in your browser. Just follow the instructions on the page.
 
 ### Manual installation
 
 1. Download the 5.52 system update from [Roland's support page](https://www.roland.com/global/support/by_product/sp-404mk2/updates_drivers/) and unzip it.
-2. Open [the patcher](https://klangfeldlabs.com/doom-os/patcher) and load `SP404MKII_APP1.bin`. Everything happens in your browser, nothing is uploaded. The patcher only accepts the official 5.52 file and checks the result against [checksums.txt](checksums.txt). 
-3. Download the patched `SP404MKII_APP1.bin` and copy it to the root of your SD card.
+2. Open [our patcher](https://tracelistener.github.io/doom-os-etc./) and load the stock `SP404MKII_APP1.bin`. Leave both synth boxes checked for all 17 new waves. Everything happens in your browser, nothing is uploaded. The patcher only accepts official 5.52 and checks the result against [the fork's checksums](synth/checksums.txt).
+3. Download the patched `SP404MKII_APP1.bin` and use it with the unchanged official 5.52 `SP404MKII_APP0.bin` for your test update. Back up first and keep your known-good update for rollback.
 4. Insert the card, hold **SHIFT** while you turn the SP on, and press the **VALUE** knob when the update menu appears.
 5. When the update is done, turn the SP off and on again.
 
@@ -82,7 +82,8 @@ To go back to the original firmware, just run the updater with the original Rola
 | **SHIFT** + **PATTERN SELECT** | Undo |
 | **REMAIN** + **PATTERN SELECT** | Redo |
 
-The full guide and every control are in the [manual](https://klangfeldlabs.com/doom-os/manual/).
+The upstream DOOM OS guide is in the [original manual](https://klangfeldlabs.com/doom-os/manual/).
+Our added waves and testing instructions are documented in [WAVES.md](synth/WAVES.md).
 
 ## Coming next
 

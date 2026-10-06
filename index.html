@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DOOM OS patcher</title>
-<meta name="description" content="Patches the official Roland SP-404MK2 firmware with DOOM OS, in your browser. Nothing is uploaded.">
+<title>Tracelistener · SP-404MKII synth patcher</title>
+<meta name="description" content="Tracelistener's experimental SP-404MKII firmware patcher: DOOM OS, four-voice polyphony and 17 Wave Lab types. Runs locally in your browser; no firmware uploads.">
 <style>
 
 :root {
@@ -142,7 +142,7 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
 .synth-choice { margin: 16px 0; border: 1px solid var(--rule); border-radius: 8px; padding: 14px; }
 .synth-choice legend { font-size: 14px; font-weight: 600; }
 .synth-choice input { margin-right: 8px; }
-.synth-choice .small { margin: 10px 0 0; }
+.synth-choice .small { margin: 10px 0 0; color: var(--panel-dim); line-height: 1.6; }
 
 @media (max-width: 720px) {
   .wrap { padding: 0 20px 44px; }
@@ -162,12 +162,13 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
   <section class="row title">
     <span class="n">01</span>
     <div class="body">
-      <h1>DOOM OS patcher</h1>
+      <h1>SP-404MKII synth patcher</h1>
+      <p class="lede">Tracelistener's experimental fork: DOOM OS + four-voice Sound Generator + 17 Wave Lab types. Your firmware stays in your browser; nothing is uploaded.</p>
       <dl class="facts">
-        <div><dt>Version</dt><dd data-doomos="version"></dd></div>
-        <div><dt>Build</dt><dd data-doomos="build"></dd></div>
+        <div><dt>DOOM OS base</dt><dd data-doomos="version"></dd></div>
+        <div><dt>Base build</dt><dd data-doomos="build"></dd></div>
         <div><dt>Firmware</dt><dd data-doomos="firmware"></dd></div>
-        <div><dt>Released</dt><dd data-doomos="released"></dd></div>
+        <div><dt>Base released</dt><dd data-doomos="released"></dd></div>
       </dl>
     </div>
   </section>
@@ -176,11 +177,31 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
       <span class="n">1</span>
       <div class="body">
         <p class="t">Compatible with firmware <strong data-doomos="firmware-list"></strong>.</p>
+        <div class="tip"><span class="label">Experimental · Wave Lab v1</span><p>The preceding DOOM/poly-v4 build was reported working. These 17 new waves have passed local tests, but still need hardware testing. Back up first and keep your working firmware for rollback. CPU headroom is unmeasured.</p></div>
         <div id="doomos-patcher"></div>
-        <p class="t">Instructions: <a class="inline" href="https://klangfeldlabs.com/doom-os/patcher">klangfeldlabs.com/doom-os/patcher</a></p>
+        <p class="t">Our <a class="inline" href="https://github.com/tracelistener/doom-os-etc./blob/main/synth/WAVES.md">wave list and test instructions</a> · <a class="inline" href="https://github.com/tracelistener/doom-os-etc.">source code</a> · <a class="inline" href="https://tracelistener.github.io/sp404mk2-sound-generator/">Wave Lab preview</a></p>
+      </div>
+    </article>
+    <article class="row">
+      <span class="n">2</span>
+      <div class="body">
+        <h2>Prepare your test update</h2>
+        <ol class="steps">
+          <li>Back up your samples, projects and settings. Keep the original Roland 5.52 update and your working build.</li>
+          <li>Load the unmodified stock <code>SP404MKII_APP1.bin</code> above, not an already patched file. Leave both synth boxes checked for all 17 new waves.</li>
+          <li>Download the result as <code>SP404MKII_APP1.bin</code>. Use it with the unchanged official 5.52 <code>SP404MKII_APP0.bin</code> and your established SD-card update procedure.</li>
+          <li>Test ordinary sample playback first, then one synth voice at modest LEVEL. Turn TYPE past Noise2 to find FM1:1 through Grit; DUTY controls timbre. Increase to two/four voices only after the one-voice check.</li>
+          <li>For chord REC, hold the chord while entering REC, then release and finish the normal destination workflow. Return to the known-good update for hangs, stuck notes or audio breakup.</li>
+        </ol>
+        <p class="t">Uncheck Wave Lab to generate the preceding poly-v4 build. Uncheck polyphony to generate exact upstream DOOM OS. All stock waveforms, including Saw2, are retained.</p>
+        <p class="t">Expected Wave Lab v1 APP1 SHA-256:<br><code style="overflow-wrap:anywhere">405644c9ca0d296300aca7a8482ebf53fb7a9f0e467867a2677bbc90731c3119</code></p>
       </div>
     </article>
   </main>
+  <footer class="site">
+    <p>Tracelistener's experimental SP-404MKII fork.</p>
+    <p class="note">Based on DOOM OS by Quintus Oostendorp; see the repository's MIT license. Not an upstream DOOM OS release, and not affiliated with Roland. This page cannot flash your SP automatically.</p>
+  </footer>
 </div>
 <script src="synth-data.js"></script>
 <script src="waves-data.js"></script>

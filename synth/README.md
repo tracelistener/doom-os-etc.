@@ -28,11 +28,12 @@ This does not make normal sample pads or DOOM patterns into live synth pads.
 DOOM OS sequencer/mixer interaction, MIDI, hardware timing and long-session
 stability still need device testing.
 
-## Local browser patcher
+## Our online or local browser patcher
 
 1. Back up samples/projects/settings and keep the original Roland 5.52 update.
-2. Open **this fork's `index.html` locally**. The linked official online patcher
-   does not contain this fork's additions.
+2. Open [our patcher](https://tracelistener.github.io/doom-os-etc./), or open
+   **this fork's `index.html` locally**. The upstream patcher does not contain
+   this fork's additions.
 3. Supply the **unmodified stock 5.52 `SP404MKII_APP1.bin`**, not our v4 binary
    or an existing DOOM image.
 4. Leave “Add four-voice Sound Generator” checked for the combined build.
