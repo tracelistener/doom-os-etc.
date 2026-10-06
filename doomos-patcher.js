@@ -204,8 +204,8 @@ if (typeof module === 'object' && module.exports) {
         '<label><input type="checkbox" id="synthPoly" checked> Add four-voice Sound Generator (poly-test-v4)</label>' +
         '<p class="small">Shared controls, held-pad LEDs and static-chord REC. Experimental fork: back up first.</p>' +
         (window.DOOMOS_WAVES ?
-          '<label><input type="checkbox" id="synthWaves" checked> Add 17 Wave Lab types (15–31; needs polyphony)</label>' +
-          '<p class="small">Keeps all stock waves. New DUTY-controlled FM, CZ, folding, additive, table and digital waves. Experimental: CPU headroom is unmeasured.</p>' : '') +
+          '<label><input type="checkbox" id="synthWaves"> Test Wave Lab v8 RAM (all 17 types; raw DUTY grit; needs polyphony)</label>' +
+          '<p class="small">No DUTY smoother or PolyBLEP. Retains v7 loudness, OCT note-off, ENV and release fixes. Raw knob jitter/aliasing is intentional. Hardware-unverified; CPU headroom is unmeasured.</p>' : '') +
         '</fieldset>' : '') +
       '<div class="actions">' +
       '<button type="button" class="btn" id="patch" disabled>Patch firmware</button>' +
@@ -312,7 +312,7 @@ if (typeof module === 'object' && module.exports) {
         reset.hidden = false;
         patchBtn.hidden = true;
         say('Done. DOOM OS' + (addPoly ? ' + experimental poly-test-v4' : '') +
-            (addWaves ? ' + 17 Wave Lab types' : '') +
+            (addWaves ? ' + 17 Wave Lab types (v8 RAM, raw DUTY grit)' : '') +
             ' has been patched into firmware ' + result.label + '. '
             + 'Download it and keep the name SP404MKII_APP1.bin.', 'ok');
         state.textContent = 'Complete';

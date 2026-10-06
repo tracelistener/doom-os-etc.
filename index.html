@@ -177,9 +177,9 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
       <span class="n">1</span>
       <div class="body">
         <p class="t">Compatible with firmware <strong data-doomos="firmware-list"></strong>.</p>
-        <div class="tip"><span class="label">Experimental · Wave Lab v1</span><p>The preceding DOOM/poly-v4 build was reported working. These 17 new waves have passed local tests, but still need hardware testing. Back up first and keep your working firmware for rollback. CPU headroom is unmeasured.</p></div>
+        <div class="tip"><span class="label">Wave Lab V8 · raw DUTY grit restored · RAM execution</span><p>V8 removes DUTY smoothing and Sync/CZRes PolyBLEP, restoring the raw v3 wave recipes. It retains v7 loudness matching, quieter Pulse/Noise, OCT note-off, FREQ/ENV/START-END and release fixes. Knob jitter and aliasing grit are intentional again. All 13 original v8 emulator checks pass; this build has not been tested on hardware. Wave Lab is OFF by default. Back up first; actual CPU headroom remains unmeasured.</p></div>
         <div id="doomos-patcher"></div>
-        <p class="t">Our <a class="inline" href="https://github.com/tracelistener/doom-os-etc./blob/main/synth/WAVES.md">wave list and test instructions</a> · <a class="inline" href="https://github.com/tracelistener/doom-os-etc.">source code</a> · <a class="inline" href="https://tracelistener.github.io/sp404mk2-sound-generator/">Wave Lab preview</a></p>
+        <p class="t">Our <a class="inline" href="https://github.com/tracelistener/doom-os-etc./blob/main/synth/V8.md">v8 changes and test instructions</a> · <a class="inline" href="https://github.com/tracelistener/doom-os-etc./blob/main/synth/WAVES.md">wave list</a> · <a class="inline" href="https://github.com/tracelistener/doom-os-etc.">source code</a> · <a class="inline" href="https://tracelistener.github.io/sp404mk2-sound-generator/">Wave Lab preview</a></p>
       </div>
     </article>
     <article class="row">
@@ -188,13 +188,13 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
         <h2>Prepare your test update</h2>
         <ol class="steps">
           <li>Back up your samples, projects and settings. Keep the original Roland 5.52 update and your working build.</li>
-          <li>Load the unmodified stock <code>SP404MKII_APP1.bin</code> above, not an already patched file. Leave both synth boxes checked for all 17 new waves.</li>
+          <li>Load the unmodified stock 5.52 <code>SP404MKII_APP1.bin</code> above. Select Wave Lab to generate the 17-wave V8 RAM candidate. Leaving it OFF generates the original poly-v4 baseline, without v8's later fixes.</li>
           <li>Download the result as <code>SP404MKII_APP1.bin</code>. Use it with the unchanged official 5.52 <code>SP404MKII_APP0.bin</code> and your established SD-card update procedure.</li>
-          <li>Test ordinary sample playback first, then one synth voice at modest LEVEL. Turn TYPE past Noise2 to find FM1:1 through Grit; DUTY controls timbre. Increase to two/four voices only after the one-voice check.</li>
+          <li>For V8, start at modest LEVEL with one Sine, then FM1:1 and a DUTY sweep. Check release, OCT changes, FREQ, ENV and START/END. Then test types individually, followed by two and four voices and TYPE changes. Raw DUTY crackle and Sync/CZRes aliasing are intentional; unexpected stock distortion, runaway loudness or a hang are not. Save simultaneous sampler/effect/DOOM load for last.</li>
           <li>For chord REC, hold the chord while entering REC, then release and finish the normal destination workflow. Return to the known-good update for hangs, stuck notes or audio breakup.</li>
         </ol>
-        <p class="t">Uncheck Wave Lab to generate the preceding poly-v4 build. Uncheck polyphony to generate exact upstream DOOM OS. All stock waveforms, including Saw2, are retained.</p>
-        <p class="t">Expected Wave Lab v1 APP1 SHA-256:<br><code style="overflow-wrap:anywhere">405644c9ca0d296300aca7a8482ebf53fb7a9f0e467867a2677bbc90731c3119</code></p>
+        <p class="t">Uncheck Wave Lab to generate the preceding poly-v4 build. Uncheck polyphony to generate exact upstream DOOM OS. All stock waveforms, including Saw2, are retained; Pulse and Noise1/2 are 6 dB quieter in v8. To roll back to the smoother v7 sound, use your saved v7 firmware pair.</p>
+        <p class="t">Expected Wave Lab V8 APP1: 2,961,072 bytes. SHA-256:<br><code style="overflow-wrap:anywhere">12dbeae4c85722e3109aa2359102e8525c0c5e3729fb64126456abd83ae283c7</code></p>
       </div>
     </article>
   </main>
@@ -203,8 +203,8 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
     <p class="note">Based on DOOM OS by Quintus Oostendorp; see the repository's MIT license. Not an upstream DOOM OS release, and not affiliated with Roland. This page cannot flash your SP automatically.</p>
   </footer>
 </div>
-<script src="synth-data.js"></script>
-<script src="waves-data.js"></script>
-<script src="doomos-patcher.js"></script>
+<script src="synth-data.js?v=waves-v8-12dbeae4"></script>
+<script src="waves-data.js?v=waves-v8-12dbeae4"></script>
+<script src="doomos-patcher.js?v=waves-v8-12dbeae4"></script>
 </body>
 </html>

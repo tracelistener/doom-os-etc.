@@ -6,3 +6,9 @@ source-poly-test-v4  47100c173dec7a87d42d6b8022f1319332b5f293f70b70d1eb32d67ff13
 DOOM-ED5E-plus-poly-v4  5ef3642a238d157f0176547dc22d11d46f445072e3aa0ae47879ac304e42cae3  2835472
 unchanged-stock-APP0  3e35ff30137f741a715566e205384f9b434ca7ac3847e247bad3f0c9c8a2bd23  2359296
 DOOM-poly-v4-WaveLab-v1  405644c9ca0d296300aca7a8482ebf53fb7a9f0e467867a2677bbc90731c3119  2883632
+# V1 failed on hardware; retained here for provenance, not recommended.
+DOOM-poly-v4-WaveLab-v2-XIP-candidate  9c1c729f9aacbd9e7a184703550e7dd8c7775e091184406eb63f1a9ae99e906d  2883824
+# V2 also failed on hardware. V3 below is locally verified only, pending a device test.
+DOOM-poly-v4-WaveLab-v3-budget-candidate  a402213664c687324d7140b6ffafecf528482a54be13f20a3994aa8020f4c2b6  2948288
+# V8 RAM: raw DUTY/no PolyBLEP; retains v7 fixes. Emulator-tested, NOT hardware-tested.
+DOOM-poly-v4-WaveLab-v8-ram  12dbeae4c85722e3109aa2359102e8525c0c5e3729fb64126456abd83ae283c7  2961072

@@ -12,10 +12,30 @@ typedef unsigned char u8;
 static float clamp(float x, float lo, float hi) { return x < lo ? lo : x > hi ? hi : x; }
 static float absf(float x) { return x < 0 ? -x : x; }
 static float frac(float x) { return x - (int)x; } /* all callers nonnegative */
-static float exp2_(float x) { return ((float (*)(float))0x800d309b)(x); }
+/* Cached recipes use the SP's actual integer-percent DUTY domain. */
+static int duty_index(float d) { return (int)(d*100 + 0.5f); }
+/* Negative exponent only: fractional lookup + IEEE normal power of two.
+ * Bounded, no libm calls, and values below minimum normal are inaudible. */
+static float exp2_negative(float x) {
+    if (x <= -126) return 0;
+    if (x >= 0) return 1;
+    int n = (int)x;
+    float t = x-n;
+    if (t < 0) { --n; t += 1; }
+    float pos = t*256;
+    int i = (int)pos;
+    /* Small negative inputs can round to t==1. Preserve the endpoint. */
+    if (i >= 256) { ++n; i = 0; pos = 0; }
+    union { u32 bits; float value; } scale;
+    scale.bits = (u32)(n+127) << 23;
+    return scale.value * (exp2_fraction[i] + (pos-i)*(exp2_fraction[i+1]-exp2_fraction[i]));
+}
 static float sine(float p) {
     p -= (int)p;
     if (p < 0) p += 1;
+    /* A tiny negative argument can round to exactly 1 after the addition.
+     * Wrap again before indexing, rather than read past sine_table[2048]. */
+    if (p >= 1) p = 0;
     float x = p * 2048;
     int i = (int)x;
     float t = x - i;
@@ -24,9 +44,11 @@ static float sine(float p) {
 static float cosine(float p) { return sine(p + 0.25f); }
 static float tanh_(float x) {
     float a = absf(x);
-    if (a > 10) return x < 0 ? -1 : 1;
-    float e = exp2_(-2.88539008178f * a);
-    float y = (1 - e) / (1 + e);
+    if (a >= 10) return x < 0 ? -1 : 1;
+    float pos = a*102.4f;
+    int i = (int)pos;
+    if (i >= 1024) return x < 0 ? -1 : 1;
+    float y = tanh_table[i] + (pos-i)*(tanh_table[i+1]-tanh_table[i]);
     return x < 0 ? -y : y;
 }
 static float hash11(u32 x) {
@@ -38,12 +60,9 @@ static float hash11(u32 x) {
 static float lp_bank(float p, float d, float dt, int odd) {
     float previous = 0, current = sine(p), two_c = 2 * cosine(p), y = 0;
     int nmax = (int)clamp(0.45f / dt, 1, 64);
-    float nc = exp2_(0.2f + 5.2f * d);
+    const float *gains = lp_gains[duty_index(d) + (odd ? 101 : 0)];
     for (int n = 1; n <= nmax; n++) {
-        if (!odd || (n & 1)) {
-            float x = n / nc, a = 1 - x*x, b = x / 1.4f;
-            y += current / (n * (a*a + b*b));
-        }
+        y += current * gains[n-1];
         float next = two_c * current - previous;
         previous = current; current = next;
     }
@@ -71,38 +90,33 @@ float wave_eval(u32 type, float p, float d, float dt, float r) {
         float base = p < 0.5f ? 0 : 0.5f;
         return cosine(base + 0.5f * clamp(h / m, 0, 1));
     }
-    case 20: return (1 - p) * cosine(exp2_(4*d) * p);
-    case 21: return sine(frac(exp2_(3*d) * p));
+    case 20: return (1 - p) * cosine(cz_scales[duty_index(d)][0] * p);
+    case 21: return sine(frac(cz_scales[duty_index(d)][1] * p));
     case 22: return sine(0.25f * (1 + 6*d) * sine(p));
     case 23: {
-        float g = 1 + 14*d*d, b = 0.35f, t0 = tanh_(g*b);
-        float n1 = tanh_(g*(1+b)) - t0, n2 = t0 - tanh_(g*(b-1));
-        return (tanh_(g*(sine(p)+b)) - t0) / (n1 > n2 ? n1 : n2);
+        const float *cached = drive_params[duty_index(d)];
+        return (tanh_(cached[0]*(sine(p)+0.35f)) - cached[1])*cached[2];
     }
     case 24: return lp_bank(p, d, dt, 0);
     case 25: return lp_bank(p, d, dt, 1);
     case 26: {
-        float pos = d*4;
-        int i = (int)pos;
-        if (i > 3) i = 3;
-        float t = pos-i, y = 0;
+        const float *gains = organ_gains[duty_index(d)];
+        float y = 0;
         for (int j = 0; j < 9; j++) {
             int h = organ_h[j];
             if (h*dt > 0.45f) continue;
-            float g = organ_regs[i][j]*(1-t) + organ_regs[i+1][j]*t;
+            float g = gains[j];
             if (g > 0) y += g*sine(h*p);
         }
         return y;
     }
     case 27: {
-        float pos = d*4;
-        int i = (int)pos;
-        if (i > 3) i = 3;
-        float t = pos-i, tsec = p/(dt*48000), y = 0.3f*sine(p);
+        const float *freq = formant_freq[duty_index(d)];
+        float tsec = p/(dt*48000), y = 0.3f*sine(p);
         for (int k = 0; k < 3; k++) {
-            float f = vowels[i][k] * exp2_(vowel_ratio_log2[i][k]*t);
+            float f = freq[k];
             if (f > 21600) continue;
-            float env = exp2_(-4.53236014183f * vowel_bw[k]*tsec);
+            float env = exp2_negative(-4.53236014183f * vowel_bw[k]*tsec);
             float att = clamp(tsec*f*2, 0, 1);
             y += vowel_amp[k]*env*att*sine(f*tsec);
         }

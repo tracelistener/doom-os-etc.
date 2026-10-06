@@ -10,6 +10,7 @@ import unittest
 import build
 import patch_waves as waves
 import test_build
+import test_release
 from unicorn import UC_ARCH_ARM, UC_MODE_THUMB, UC_HOOK_CODE, Uc
 from unicorn.arm_const import UC_ARM_REG_LR, UC_ARM_REG_PC, UC_ARM_REG_R0, UC_ARM_REG_R1, UC_ARM_REG_R2
 from unicorn.arm_const import UC_ARM_REG_S0, UC_ARM_REG_S1, UC_ARM_REG_S2, UC_ARM_REG_S3
@@ -19,7 +20,7 @@ HERE = Path(__file__).resolve().parent
 
 def image_and_info():
     base = Path(os.environ['DOOM_POLY_APP1']).read_bytes()
-    module, symbols = waves.module_info(Path(os.environ.get('WAVE_MODULE', HERE.parent/'build'/'waves')))
+    module, symbols = waves.module_info(Path(os.environ.get('WAVE_MODULE', HERE.parent/'build'/'waves-v3-budget')))
     return waves.build_image(base, module, symbols)
 
 
@@ -27,7 +28,7 @@ def float_bits(x):
     return struct.unpack('<I', struct.pack('<f', x))[0]
 
 
-class WaveEmulation(test_build.CombinedEmulation):
+class WaveEmulation(test_release.ReleaseEmulation):
     @classmethod
     def setUpClass(cls):
         cls.image, cls.info = image_and_info()
@@ -35,10 +36,8 @@ class WaveEmulation(test_build.CombinedEmulation):
 
     def setUp(self):
         super().setUp()
-        self.uc.mem_map(0x83540000, 0x20000)
-        row = build.scatter(self.image)[-1]
-        off = row[0] - build.v2.FLASH
-        self.uc.mem_write(row[1], self.image[off:off+row[2]])
+        # The superclass maps the complete image in flash. There is no wave
+        # RAM copy, expanded zero row or extra SDRAM allocation in v2.
 
     def raw(self, type, p, d, dt, r):
         for reg, value in zip((UC_ARM_REG_S0,UC_ARM_REG_S1,UC_ARM_REG_S2,UC_ARM_REG_S3), (p,d,dt,r)):
@@ -63,6 +62,22 @@ class WaveEmulation(test_build.CombinedEmulation):
                 tolerance = 0.00005
                 self.assertLessEqual(delta, tolerance)
         print('Wave math maximum absolute error by type:', worst)
+
+    def test_cached_recipes_match_every_integer_duty_percent(self):
+        source = os.environ['WAVE_LAB_HTML']
+        result = subprocess.check_output(['node',str(HERE/'reference_waves.cjs'),source,'--all-duty'],text=True)
+        cached = (20,21,23,24,25,26,27)
+        worst = {}
+        for case in json.loads(result)['cases']:
+            if case['type'] not in cached:
+                continue
+            got = self.raw(case['type'],case['p'],case['d'],case['dt'],case['r'])
+            delta = abs(got-case['value'])
+            worst[case['type']] = max(worst.get(case['type'],0),delta)
+            with self.subTest(kind=case['type'],duty=round(case['d']*100),phase=case['p'],dt=case['dt']):
+                self.assertTrue(math.isfinite(got))
+                self.assertLessEqual(delta,0.00005)
+        print('All 101 DUTY values, cached recipe maximum errors:',worst)
 
     def test_new_type_range_freq_range_duty_range_and_real_setter(self):
         low, high = 0x30001000, 0x30001004
@@ -102,7 +117,7 @@ class WaveEmulation(test_build.CombinedEmulation):
             if type not in (13,14):
                 self.assertEqual(got,'Freq')
             else:
-                self.assertNotEqual(got,'Freq')
+                self.assertEqual(got,'CycleFreq')
 
     def test_each_new_type_runs_real_oscillator_updates_phase_and_reads_level(self):
         state = test_build.harness.VOICES[0]
@@ -170,6 +185,47 @@ class WaveEmulation(test_build.CombinedEmulation):
                 if i==0: expected[0x17C:0x180] = b'\xff'*4
                 self.assertEqual(bytes(self.uc.mem_read(state,0x1B0)),bytes(expected))
 
+    def test_stock_audio_uses_untouched_v4_gate_and_matches_old_pcm(self):
+        baseline = test_build.CombinedEmulation('test_four_real_notes_allocate_and_fifth_is_dropped_without_mutation')
+        test_build.CombinedEmulation.setUpClass()
+        baseline.setUp()
+        h, size = test_build.harness, 64*14*4
+        visited = []
+        def entry(machine,address,length,unused):
+            if address == build.v4.OSC_GATE:
+                visited.append(machine.reg_read(UC_ARM_REG_R0))
+            if address == self.info['symbols']['wave_output'] & ~1:
+                self.fail('stock type called custom C renderer')
+        self.uc.hook_add(UC_HOOK_CODE,entry)
+        for case in (self,baseline):
+            case.real_render = case.real_preview = True
+        # Stock 8-10 use VSEL, unsupported by this Unicorn version. Those
+        # dispatch/code bytes are structurally guarded instead; do not fake
+        # a full dynamic stock-wave sweep.
+        for type in (*range(8),11,12,13,14):
+            for case in (self,baseline):
+                case._voices()
+                for state in h.VOICES:
+                    case.uc.mem_write(state+0x70,bytes([type,type]))
+            for block in range(16):
+                visited.clear()
+                for case in (self,baseline):
+                    case.uc.mem_write(0x20001000,bytes(size))
+                    case._call(build.v2.RENDER_WRAPPER,r1=0x20001000,r2=64,r3=14,count=4000000)
+                self.assertEqual(set(visited),set(h.VOICES))
+                self.assertEqual(bytes(self.uc.mem_read(0x20001000,size)),bytes(baseline.uc.mem_read(0x20001000,size)))
+
+    def test_sequential_type_changes_settle_all_four_voices(self):
+        h = test_build.harness
+        self.real_render = self.real_preview = True
+        self._voices()
+        for type in (*range(15,32),14,0,31,15):
+            self._param(h.TYPE,type)
+            for block in range(7):
+                self.uc.mem_write(0x20001000,bytes(64*14*4))
+                self._call(build.v2.RENDER_WRAPPER,r1=0x20001000,r2=64,r3=14,count=4000000)
+            self.assertEqual([self.uc.mem_read(st+0x70,1)[0] for st in h.VOICES],[type]*4)
+
 
 class WaveLayout(unittest.TestCase):
     @classmethod
@@ -179,31 +235,36 @@ class WaveLayout(unittest.TestCase):
 
     def test_deterministic_and_hash_guarded(self):
         self.assertEqual(image_and_info()[0],self.image)
-        module,symbols=waves.module_info(Path(os.environ.get('WAVE_MODULE',HERE.parent/'build'/'waves')))
+        module,symbols=waves.module_info(Path(os.environ.get('WAVE_MODULE',HERE.parent/'build'/'waves-v3-budget')))
         with self.assertRaises(ValueError):
             waves.build_image(self.base[:-1],module,symbols)
 
     def test_only_documented_hook_bytes_changed_in_existing_doom_poly(self):
-        allowed=set(range(0x80,0x88))
+        allowed=set()
         for addr,size in self.info['hooks']:
             off=build.offset(self.base,addr,size)
             allowed.update(range(off,off+size))
         changes={i for i,(a,b) in enumerate(zip(self.base,self.image)) if a!=b}
         self.assertTrue(changes<=allowed)
 
-    def test_new_copy_after_zero_and_pool_rebased_without_existing_offset_changes(self):
+    def test_boot_table_zero_rows_and_pool_are_exactly_unchanged(self):
         rows=build.scatter(self.image)
-        self.assertEqual(len(rows),15)
-        for original,current in zip(build.scatter(self.base),rows):
-            if current[1]!=0x802E7800:
-                self.assertEqual(original,current)
-            else:
-                self.assertEqual(current[1]+current[2],self.info['pool_base'])
-        self.assertEqual(rows[-1][1:],[waves.CODE_BASE,self.info['code_size'],build.COPY])
-        self.assertEqual(self.info['pool_base']%32,build.v2.OLD_OS_POOL_BASE%32)
-        self.assertGreaterEqual(self.info['pool_base'],waves.CODE_BASE+self.info['code_size'])
+        self.assertEqual(len(rows),14)
+        self.assertEqual(rows,build.scatter(self.base))
+        self.assertEqual(self.image[0x80:0x88],self.base[0x80:0x88])
+        start,end=struct.unpack_from('<2I',self.base,0x80)
+        self.assertEqual(self.image[start+0x80:end+0x80],self.base[start+0x80:end+0x80])
+        self.assertEqual(self.info['pool_base'],build.v4.NEW_POOL_BASE)
+        self.assertEqual(build.runtime_bytes(self.image,0x80002260,0x24),build.runtime_bytes(self.base,0x80002260,0x24))
+        self.assertEqual(self.info['execution'],'flash-xip')
+        self.assertGreaterEqual(self.info['code_file'],len(self.base))
+        self.assertEqual(self.info['code_file']+build.v2.FLASH,waves.CODE_BASE)
         overlay=build.make_overlay(self.base,self.image,'5.52+poly+waves')
         self.assertEqual(build.apply_container(overlay,self.base),self.image)
+
+    def test_original_v4_gate_and_stock_oscillator_body_are_preserved(self):
+        for start,end in ((build.v4.OSC_GATE,build.v4.EXPORT_STOCK),(0x8000770C,0x80007F40)):
+            self.assertEqual(build.runtime_bytes(self.image,start,end-start),build.runtime_bytes(self.base,start,end-start))
 
     def test_real_scatter_dispatch_copies_all_added_regions_after_zero(self):
         uc=Uc(UC_ARCH_ARM,UC_MODE_THUMB)
@@ -222,7 +283,7 @@ class WaveLayout(unittest.TestCase):
             elif address in handlers and not running_copy:
                 args=[machine.reg_read(reg) for reg in (UC_ARM_REG_R0,UC_ARM_REG_R1,UC_ARM_REG_R2)]
                 seen.append(args+[address])
-                if args[1] in (build.v2.NOTE_WRAPPER,build.v4.CODE_BASE,waves.CODE_BASE):
+                if args[1] in (build.v2.NOTE_WRAPPER,build.v4.CODE_BASE):
                     running_copy=True
                 else:
                     if args[1]==0x802E7800:
@@ -232,7 +293,7 @@ class WaveLayout(unittest.TestCase):
         uc.emu_start(0x60080055,0x60080622,count=500000)
         self.assertEqual(uc.reg_read(UC_ARM_REG_PC),0x60080622)
         self.assertEqual(seen,rows)
-        for load,address,size,_ in rows[-3:]:
+        for load,address,size,_ in rows[-2:]:
             self.assertEqual(bytes(uc.mem_read(address,size)),self.image[load-build.v2.FLASH:load-build.v2.FLASH+size])
 
 

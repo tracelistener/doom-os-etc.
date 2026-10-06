@@ -1,0 +1,248 @@
+{
+  "base_sha256": "1b295c877f61c445f761a8a607ddb4f34327ba0875de002ebedb0a6d9cf0e18e",
+  "code_base": 2214068224,
+  "code_file": 2835472,
+  "code_size": 125360,
+  "duty": "raw (stock integer DUTY, no smoothing)",
+  "execution": "sdram-gap",
+  "extra_fixes": [
+    [
+      "0x80020478",
+      "cmp r1, #0xe",
+      "cmp r1, #0x1f"
+    ],
+    [
+      "0x800204aa",
+      "cmp r1, #4",
+      "cmp r1, #0x15"
+    ],
+    [
+      "0x800d0740",
+      "cmp r2, #9",
+      "cmp r2, #0x1a"
+    ],
+    [
+      "0x8015c14c",
+      "cmp r1, #9",
+      "cmp r1, #0x1a"
+    ],
+    [
+      "0x8013287e",
+      "cmp r2, #9",
+      "cmp r2, #0x1a"
+    ],
+    [
+      "0x8015c5fc",
+      "cmp r1, #0xe",
+      "cmp r1, #0x1f"
+    ],
+    [
+      "0x8015c602",
+      "movw r3, #0x7fdb",
+      "mvn r3, #0x24"
+    ],
+    [
+      "0x8015c614",
+      "cmp r1, #0xe",
+      "cmp r1, #0x1f"
+    ],
+    [
+      "0x8015c620",
+      "movw r2, #0x7fdb",
+      "mvn r2, #0x24"
+    ],
+    [
+      "0x8015ca9c",
+      "cmp r1, #0xe",
+      "cmp r1, #0x1f"
+    ],
+    [
+      "0x8015caa2",
+      "movw r3, #0x7fdb",
+      "mvn r3, #0x24"
+    ],
+    [
+      "0x8002b958",
+      "cmp r2, #0xe",
+      "cmp r2, #0x1f"
+    ],
+    [
+      "0x8002b964",
+      "movw r6, #0x7fdb",
+      "mvn r6, #0x24"
+    ],
+    [
+      "0x8002b970",
+      "cmp r2, #0xe",
+      "cmp r2, #0x1f"
+    ],
+    [
+      "0x8002b978",
+      "movw r2, #0x7fdb",
+      "mvn r2, #0x24"
+    ]
+  ],
+  "hooks": [
+    [
+      2148738716,
+      2
+    ],
+    [
+      2148738724,
+      2
+    ],
+    [
+      2148738758,
+      2
+    ],
+    [
+      2147590086,
+      2
+    ],
+    [
+      2148736204,
+      2
+    ],
+    [
+      2148736414,
+      2
+    ],
+    [
+      2148735914,
+      2
+    ],
+    [
+      2148739638,
+      2
+    ],
+    [
+      2147514112,
+      12
+    ],
+    [
+      2148736128,
+      12
+    ],
+    [
+      2148735868,
+      12
+    ],
+    [
+      2147615864,
+      2
+    ],
+    [
+      2147615914,
+      2
+    ],
+    [
+      2148337472,
+      2
+    ],
+    [
+      2148909388,
+      2
+    ],
+    [
+      2148739198,
+      2
+    ],
+    [
+      2148910588,
+      2
+    ],
+    [
+      2148910594,
+      4
+    ],
+    [
+      2148910612,
+      2
+    ],
+    [
+      2148910624,
+      4
+    ],
+    [
+      2148911772,
+      2
+    ],
+    [
+      2148911778,
+      4
+    ],
+    [
+      2147662168,
+      2
+    ],
+    [
+      2147662180,
+      4
+    ],
+    [
+      2147662192,
+      2
+    ],
+    [
+      2147662200,
+      4
+    ],
+    [
+      2203299840,
+      384
+    ]
+  ],
+  "loudness": {
+    "gain_max": 8.0,
+    "match": "A-weighted level of a full-scale stock Sine at C4",
+    "peak_max": 0.98
+  },
+  "module_sha256": "6b67a0c8e4cdbd26f921ffb880e590a6f967dca4668d85036535adddefc1261e",
+  "note_engine_bytes": 336,
+  "note_off": "exact note+source first, else one non-releasing voice of that source",
+  "polyblep": [],
+  "pool_base": 2203310124,
+  "pool_unchanged_from_v4": true,
+  "quiet_gain_db": -6.02,
+  "quiet_stock_types": {
+    "11": "Pulse",
+    "13": "Noise1",
+    "14": "Noise2"
+  },
+  "revision": "v8-ram",
+  "sdram_gap": [
+    "0x83f7a424",
+    "0x83ff0000"
+  ],
+  "sha256": "12dbeae4c85722e3109aa2359102e8525c0c5e3729fb64126456abd83ae283c7",
+  "size": 2961072,
+  "status": "hardware-unverified",
+  "symbols": {
+    "wave_core": 2214069377,
+    "wave_eval": 2214069249,
+    "wave_name": 2214069305,
+    "wave_output": 2214073297
+  },
+  "tables_sha256": "8d59eb235dc4dcb69906f91f17547ebfe9bc2c2f71e9002162f3995a9bdfb2b9",
+  "types": {
+    "15": "FM1:1",
+    "16": "FM1:2",
+    "17": "FM1:7",
+    "18": "CZSaw",
+    "19": "CZSqr",
+    "20": "CZRes",
+    "21": "Sync",
+    "22": "Fold",
+    "23": "Drive",
+    "24": "LPSaw",
+    "25": "LPSqr",
+    "26": "Organ",
+    "27": "Vowel",
+    "28": "Table",
+    "29": "Logic",
+    "30": "Metal",
+    "31": "Grit"
+  },
+  "wave_level_sha256": "1815a05a2d8013785db22047dd838ab4c082d1f4e573fec6418d63b4e3cf8bd5",
+  "waves_c_sha256": "fa93843fbb5fa8128e8c181634d39a0025f01ba62d9ad388201fb1995a284d4f"
+}

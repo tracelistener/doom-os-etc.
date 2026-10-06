@@ -11,7 +11,7 @@ import struct
 import subprocess
 
 HERE = Path(__file__).resolve().parent
-LINK_BASE = 0x8353E400
+LINK_BASE = 0x60334C00
 
 
 def table_header():
@@ -54,6 +54,37 @@ def table_header():
     header += array('vowel_ratio_log2', [math.log2(vowels[i+1][k]/vowels[i][k]) for i in range(4) for k in range(3)], [4, 3])
     header += array('vowel_amp', [1,0.55,0.3], [3])
     header += array('vowel_bw', [80,90,120], [3])
+    # SP DUTY is an integer 0..100. Compute parameter-only work offline,
+    # never in the real-time harmonic loop. These are immutable flash data.
+    lp = []
+    for odd in (False, True):
+        for duty in range(101):
+            nc = 2**(0.2 + 5.2*duty/100)
+            for n in range(1,65):
+                x = n/nc
+                gain = 1/(n*((1-x*x)**2 + (x/1.4)**2))
+                lp.append(0 if odd and n%2 == 0 else gain)
+    header += array('lp_gains', lp, [202,64])
+    drive, organ, formants, scales = [], [], [], []
+    for duty in range(101):
+        d = duty/100
+        g = 1 + 14*d*d
+        t0 = math.tanh(g*0.35)
+        norm = max(math.tanh(g*1.35)-t0, t0-math.tanh(-g*0.65))
+        drive += [g,t0,1/norm]
+        pos = d*4
+        i = min(3,int(pos))
+        t = pos-i
+        gains = [10**(-3*(8-int(ch))/20) if ch != '0' else 0 for s in regs for ch in s]
+        organ += [gains[i*9+j]*(1-t) + gains[(i+1)*9+j]*t for j in range(9)]
+        formants += [vowels[i][k]*(vowels[i+1][k]/vowels[i][k])**t for k in range(3)]
+        scales += [2**(4*d),2**(3*d)]
+    header += array('drive_params', drive, [101,3])
+    header += array('organ_gains', organ, [101,9])
+    header += array('formant_freq', formants, [101,3])
+    header += array('cz_scales', scales, [101,2])
+    header += array('tanh_table', [math.tanh(10*i/1024) for i in range(1025)], [1025])
+    header += array('exp2_fraction', [2**(i/256) for i in range(257)], [257])
     return header
 
 
@@ -73,7 +104,7 @@ def read_elf(data):
         if flags & 2 and size:
             if kind == 8:
                 raise ValueError('mutable BSS is not allowed in the waveform module')
-            if not LINK_BASE <= addr < 0x83580000 or addr + size > 0x83580000:
+            if not LINK_BASE <= addr < 0x60400000 or addr + size > 0x60400000:
                 raise ValueError('unexpected allocated ELF address')
             blocks.append((addr, data[off:off+size]))
             end = max(end, addr+size)
@@ -128,6 +159,6 @@ def compile_module(zig, out):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--zig', type=Path, required=True)
-    parser.add_argument('--out', type=Path, default=HERE.parent / 'build' / 'waves')
+    parser.add_argument('--out', type=Path, default=HERE.parent / 'build' / 'waves-v3-budget')
     args = parser.parse_args()
     compile_module(args.zig.resolve(), args.out.resolve())

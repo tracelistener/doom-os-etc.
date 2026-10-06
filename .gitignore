@@ -9,4 +9,5 @@ __pycache__/
 .pytest_cache/
 .venv/
 .wave_toolchain/
+.zig-cache/
 venv/

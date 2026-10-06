@@ -16,7 +16,7 @@ function load(includeSynth = true, includeWaves = false) {
   const elements = new Map();
   const get = id => {
     if (!elements.has(id)) elements.set(id, {
-      id, checked: true, hidden: false, disabled: false, value: '', listeners: {},
+      id, checked: id === 'synthPoly', hidden: false, disabled: false, value: '', listeners: {},
       classList: { add() {}, remove() {} },
       addEventListener(event, fn) { this.listeners[event] = fn; },
       click() {},
@@ -109,10 +109,27 @@ async function choose(page, bytes, name = 'SP404MKII_APP1.bin') {
   assert.match(broken.get('status').textContent, /came out wrong/);
 
   const wavePage = load(true, true);
+  assert.equal(wavePage.get('synthWaves').checked,false,'candidate must not be selected by default');
+  assert.doesNotMatch(wavePage.get('doomos-patcher').innerHTML,/id="synthWaves" checked/);
+  assert.equal(wavePage.context.window.DOOMOS_WAVES.revision,'v8-ram');
+  assert.equal(wavePage.context.window.DOOMOS_WAVES.sha256,'12dbeae4c85722e3109aa2359102e8525c0c5e3729fb64126456abd83ae283c7');
+  assert.equal(wavePage.context.window.DOOMOS_WAVES.size,2961072);
+  assert.equal(wavePage.context.window.DOOMOS_WAVES.execution,'sdram-gap');
+  assert.equal(wavePage.context.window.DOOMOS_WAVES.pool_unchanged_from_v4,true);
+  assert.equal(wavePage.context.window.DOOMOS_WAVES.polyblep.length,0);
+  assert.match(wavePage.context.window.DOOMOS_WAVES.duty,/raw.*no smoothing/);
+  assert.equal(wavePage.context.window.DOOMOS_WAVES.status,'hardware-unverified');
+  assert.equal(wavePage.context.window.DOOMOS_WAVES.release_fix,true);
+  assert.equal(wavePage.context.window.DOOMOS_WAVES.noise_freq_label_fix,true);
   const waveOverlay = api.fromBase64(wavePage.context.window.DOOMOS_WAVES_PATCH);
   const waveResult = api.applyPatch(waveOverlay, merged.bytes);
   assert.equal(waveResult.digest, wavePage.context.window.DOOMOS_WAVES.sha256);
   assert.equal(waveResult.bytes.length, wavePage.context.window.DOOMOS_WAVES.size);
+  await choose(wavePage,stock);
+  await wavePage.get('patch').listeners.click();
+  assert.equal(digest(new Uint8Array(await wavePage.blob().arrayBuffer())),merged.digest,'default returns working v4');
+  wavePage.get('reset').listeners.click();
+  wavePage.get('synthWaves').checked = true;
   await choose(wavePage,stock);
   await wavePage.get('patch').listeners.click();
   assert.equal(digest(new Uint8Array(await wavePage.blob().arrayBuffer())),waveResult.digest);

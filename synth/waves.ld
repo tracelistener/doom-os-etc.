@@ -1,6 +1,6 @@
 ENTRY(wave_output)
 SECTIONS {
-    . = 0x8353e400;
+    . = 0x60334c00;
     .text : { KEEP(*(.text.wave_eval)) KEEP(*(.text.wave_name)) *(.text*) }
     .rodata : ALIGN(16) { *(.rodata*) }
     .data : ALIGN(16) { *(.data*) }

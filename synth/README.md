@@ -7,7 +7,9 @@ releases still describe upstream builds only.
 
 Update: the user reported this preceding DOOM/poly-v4 build working. The
 separate [17-wave extension](WAVES.md) adds types 15–31 to it, with its own
-overlay/hash/test image. That extension has not been tested on hardware.
+overlay/hash/test image. The current [V8 RAM build](V8.md) keeps all 17 waves,
+restores raw DUTY and Sync/CZRes grit, and retains v7's fixes. It is emulator-
+tested, not hardware-validated. Archived poly-v4 sources remain unchanged.
 
 ## What is included
 
@@ -38,8 +40,8 @@ stability still need device testing.
    or an existing DOOM image.
 4. Leave “Add four-voice Sound Generator” checked for the combined build.
    Unchecking it produces the exact original ED5E image instead.
-   The separate “Add 17 Wave Lab types” option is now checked by default;
-   uncheck that option for this original poly-v4 build. It requires polyphony.
+   The Wave Lab V8 option is OFF by default; select it for all 17 new waves
+   with v8's raw-grit sound and retained fixes. Off preserves the original v4.
 5. Patch and download. Stock, DOOM and combined SHA-256 checks are performed
    locally; the browser does not upload your firmware.
 
