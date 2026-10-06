@@ -1,0 +1,8 @@
+# Experimental combined build. Not run on hardware. Upstream checksums.txt is unchanged.
+# name  SHA-256  bytes
+stock-APP1-5.52  4a3d67711e14dcc97d50249a4eee7dd6df0251a2f37757cbbe2556c233730d80  2652672
+upstream-DOOM-ED5E  16c0b62a1a7f385be00d1cf4222180788be1ae29bb2f280a46835a56a055afa7  2830128
+source-poly-test-v4  47100c173dec7a87d42d6b8022f1319332b5f293f70b70d1eb32d67ff131c35d  2658000
+DOOM-ED5E-plus-poly-v4  5ef3642a238d157f0176547dc22d11d46f445072e3aa0ae47879ac304e42cae3  2835472
+unchanged-stock-APP0  3e35ff30137f741a715566e205384f9b434ca7ac3847e247bad3f0c9c8a2bd23  2359296
+DOOM-poly-v4-WaveLab-v1  405644c9ca0d296300aca7a8482ebf53fb7a9f0e467867a2677bbc90731c3119  2883632

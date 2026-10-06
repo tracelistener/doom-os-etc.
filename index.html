@@ -139,6 +139,11 @@ footer.site nav { display: flex; flex-wrap: wrap; gap: 22px; font-weight: 600; }
 footer.site .star { color: var(--accent-text); }
 footer.site .note { flex-basis: 100%; font-size: 13px; }
 
+.synth-choice { margin: 16px 0; border: 1px solid var(--rule); border-radius: 8px; padding: 14px; }
+.synth-choice legend { font-size: 14px; font-weight: 600; }
+.synth-choice input { margin-right: 8px; }
+.synth-choice .small { margin: 10px 0 0; }
+
 @media (max-width: 720px) {
   .wrap { padding: 0 20px 44px; }
   .row { grid-template-columns: 34px minmax(0, 1fr); column-gap: 14px; }
@@ -177,6 +182,8 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
     </article>
   </main>
 </div>
+<script src="synth-data.js"></script>
+<script src="waves-data.js"></script>
 <script src="doomos-patcher.js"></script>
 </body>
 </html>

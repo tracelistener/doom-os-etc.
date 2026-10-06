@@ -8,7 +8,16 @@ DOOM OS is a heavily modified version of the original 5.52 firmware. It adds a g
 sequencer, a mixer, effect automation, custom shortcuts and more, and improves parts of the original
 firmware. You patch it yourself, in your browser, using the official firmware file from Roland.
 
-Current version: 0.6.1-alpha, build ED5E (2026-10-04)
+Upstream base: 0.6.1-alpha, build ED5E (2026-10-04)
+
+This fork adds **experimental four-voice Sound Generator polyphony from our
+poly-test-v4 firmware**, plus **17 Wave Lab waveforms as types 15–31**.
+Open this fork's `index.html` locally to select polyphony and/or the waves;
+the official online patcher below builds upstream DOOM OS only. The combined
+build has passed instruction-level and composition tests, **not hardware
+validation for the new waves**. The user reported the preceding DOOM/poly-v4
+build working. See [the integration notes](synth/README.md) and
+[new-wave build steps and test checklist](synth/WAVES.md).
 
 **[Quick installation: Use the web patcher to install DOOM OS](https://klangfeldlabs.com/doom-os/patcher)**
 
