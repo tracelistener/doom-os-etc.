@@ -201,7 +201,7 @@ if (typeof module === 'object' && module.exports) {
       '<p class="status" id="status" role="status">Ready. No file loaded yet.</p>' +
       (window.DOOMOS_SYNTH ?
         '<div class="synth-choice"><label><input type="checkbox" id="synthPoly"' +
-        (window.DOOMOS_WAVES ? '> Sound Generator v9.1 (4 voices + 17 new waves + envelopes + voice stealing)' :
+        (window.DOOMOS_WAVES ? '> Sound Generator v9.1 (4 voices + 17 new waves + envelopes)' :
           ' checked> Sound Generator (4 voices)') +
         '</label></div>' : '') +
       '<div class="actions">' +

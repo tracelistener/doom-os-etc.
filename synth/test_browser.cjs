@@ -113,7 +113,7 @@ async function choose(page, bytes, name = 'SP404MKII_APP1.bin') {
   assert.equal(wavePage.get('synthPoly').checked,false,'combined candidate remains opt-in');
   const panel = wavePage.get('doomos-patcher').innerHTML;
   assert.equal((panel.match(/type="checkbox"/g) || []).length,1,'one combined option');
-  assert.match(panel,/Sound Generator v9\.1 \(4 voices \+ 17 new waves \+ envelopes \+ voice stealing\)/);
+  assert.match(panel,/Sound Generator v9\.1 \(4 voices \+ 17 new waves \+ envelopes\)/);
   assert.doesNotMatch(panel,/synthWaves|Experimental fork addition|Shared controls|No DUTY smoother/);
   const html = fs.readFileSync(path.join(root,'index.html'),'utf8');
   assert.doesNotMatch(html,/For V8, start at modest LEVEL|Uncheck Wave Lab|Expected Wave Lab V8 APP1/);
