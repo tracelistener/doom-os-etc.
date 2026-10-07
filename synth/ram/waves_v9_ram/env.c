@@ -197,6 +197,38 @@ EXPORT int env_stage(u8 *s, int x) {
     return clamp16(y);
 }
 
+/* REC: one frame of the held-chord snapshot, as v4's mixer did (each voice
+ * halved, summed, saturated once), entered from the stock exporter's loop
+ * with its frame counter (r10, from 1), loop limit (r11) and the frame-count
+ * word at [sp+4]. A recording fades over its last 10 ms, so a sustained sound
+ * no longer stops dead at the end of the pad. The exception is a seamless
+ * raw-wave loop: ENV OFF, Pad Length >= 1 and START/END on (+0x04, on by
+ * default), which the stock exporter trims to whole cycles. That stays as
+ * rendered. With an ENV preset the sound changes over time, so it fades. */
+typedef int (*osc_fn)(volatile u8 *state);
+#define STOCK_OSC ((osc_fn)0x80007701u)
+#define FADE_FRAMES 480
+
+EXPORT int export_mix(int pos, int fp, int limit) {
+    u32 count = *(volatile u32 *)EXPORT_COUNT;
+    int sum = 0;
+    for (u32 i = 0; i < count; i++)
+        sum += STOCK_OSC((volatile u8 *)(EXPORT_BASE + i*VOICE_SIZE)) >> 1;
+    if (sum > 32767) sum = 32767;
+    if (sum < -32768) sum = -32768;
+    int last = limit < fp - 1 ? limit + 1 : fp;     /* the stock loop's final frame */
+    int left = last - pos;                          /* frames still to come after this one */
+    int fade = last/4 < FADE_FRAMES ? last/4 : FADE_FRAMES;    /* very short pads: last quarter */
+    if (fade < 1) fade = 1;
+    if (left < 0) left = 0;
+    volatile u8 *base = (volatile u8 *)EXPORT_BASE;
+    int loop = *(volatile int *)(base + 0x10) == 0          /* ENV OFF: a raw waveform */
+               && *(volatile int *)(base + 0x180) >= 1 && base[4];
+    if (!loop && left < fade)
+        sum = (int)((float)sum*(float)(left + 1)/(float)fade);
+    return sum;
+}
+
 /* Value text for ENV (parameter 0x82). Out-of-range values write nothing, as stock. */
 EXPORT void env_name(u32 value, char *target) {
     if (value > 9) return;
@@ -246,57 +278,114 @@ static void stolen_forget(int source, int note) {
             stolen_valid[j] = 0;
 }
 
+/* ---- FREQ readout and knob: they follow the latest note, not voice 0. ----
+ * With long releases voice 0 often stays busy fading, so new notes land on
+ * the other voices; a readout tied to voice 0 then froze on a fading note. */
+
+EXPORT volatile u8 display_slot;        /* voice of the latest note (or of an idle FREQ change) */
+
+EXPORT volatile u8 *display_voice(void) { return voice(display_slot & 3); }
+
+/* Getter for FREQ (parameter 0x7c): the knob steps from this value. */
+EXPORT int freq_get(volatile u8 *state) {
+    if (state[0x71] > 31) return 0;
+    return field(display_voice(), 0x5C);
+}
+
+typedef void (*setter_fn)(volatile u8 *voice, int id, int value, int flags);
+#define STOCK_SETTER ((setter_fn)0x80019E31u)
+
+/* FREQ knob: v4's interval-keeping transpose of every held voice, measured
+ * from the note on the screen. With nothing held, voice 0 takes the value. */
+EXPORT void freq_event(u32 self, int id, int value, int flags) {
+    (void)self; (void)id;
+    int delta = value - field(display_voice(), 0x5C);
+    for (int i = 0; i < 4; i++) {               /* every held note stays inside -36..48 */
+        volatile u8 *v = voice(i);
+        if (v[0] && !v[1]) {
+            int n = field(v, 0x5C);
+            if (n + delta < -36) delta = -36 - n;
+            if (n + delta > 48) delta = 48 - n;
+        }
+    }
+    int held = -1;
+    for (int i = 0; i < 4; i++) {
+        volatile u8 *v = voice(i);
+        if (!v[0]) {
+            if (i == 0) STOCK_SETTER(v, 0x7C, value, flags);
+        } else if (!v[1]) {
+            STOCK_SETTER(v, 0x7C, field(v, 0x5C) + delta, flags);
+            if (held < 0 || env_age[i] > env_age[held]) held = i;
+        }
+    }
+    volatile u8 *d = display_voice();
+    if (!d[0] || d[1]) display_slot = held >= 0 ? (u8)held : 0;   /* show a note that moved */
+}
+
+/* Voice for a new note (pad or MIDI): an idle one first (voice 0 first; an
+ * idle clone takes voice 0's settings), else the oldest fading voice, else the
+ * oldest held one. Returns the index, | STOLEN when it was sounding, or -1. */
+#define STOLEN 0x100
+static int claim(void) {
+    for (int i = 0; i < 4; i++) {
+        volatile u8 *v = voice(i);
+        if (v[0]) continue;
+        if (i) {
+            volatile u32 *dst = (volatile u32 *)v, *src = (volatile u32 *)SINGLETON;
+            *(volatile u16 *)v = 0;
+            for (int w = 1; w < 108; w++) dst[w] = src[w];
+            dst[0] = src[0] & 0xFFFF0000u;
+        }
+        /* A TYPE change made while this voice was fading never swapped its
+         * sounding type; a new note always starts on the selected one. */
+        if (v[0x70] != v[0x71]) v[0x70] = v[0x71];
+        STOCK_RESET(v);
+        env_age[i] = ++env_serial;
+        display_slot = (u8)i;
+        return i;
+    }
+    int best = -1;
+    for (int pass = 0; pass < 2 && best < 0; pass++)
+        for (int i = 0; i < 4; i++) {
+            volatile u8 *v = voice(i);
+            if (v[0] && (pass ? !v[1] : v[1]) && (best < 0 || env_age[i] < env_age[best]))
+                best = i;
+        }
+    if (best < 0) return -1;
+    volatile u8 *v = voice(best);
+    if (v[3]) return -1;                        /* REC export owns it; stock ignores the note */
+    if (!v[1] && field(v, 0x1AC) != -1)         /* a held pad note: swallow its note-off later */
+        stolen_add(field(v, 0x1AC), field(v, 0x19C));
+    u8 type = ((volatile u8 *)SINGLETON)[0x71];
+    DISPATCH_OFF();
+    if (v[1]) {                                 /* stop the fade, keep the voice sounding */
+        *(volatile int *)(v + 0x4C) = 200;
+        v[1] = 0;
+    }
+    if (v[0x70] != type || v[0x71] != type) {   /* fading voices missed TYPE changes */
+        v[0x71] = type;
+        v[0x70] = type;
+        *(volatile int *)(v + 0x48) = *(volatile int *)(SINGLETON + 0x48);
+    }
+    env_restart[best] = 1;                      /* the declick covers the switch */
+    DISPATCH_ON();
+    env_age[best] = ++env_serial;
+    display_slot = (u8)best;
+    return best | STOLEN;
+}
+
 EXPORT void note_event(u32 self, int note, int vel, int r3, int source) {
     (void)self;
     if (vel != 0) {
         *(volatile u32 *)EXPORT_COUNT = 0;      /* a new note drops an older chord snapshot */
         stolen_forget(source, note);
-        for (int i = 0; i < 4; i++) {
-            volatile u8 *v = voice(i);
-            if (v[0]) continue;
-            if (i) {                            /* an idle clone takes voice 0's settings */
-                volatile u32 *dst = (volatile u32 *)v, *src = (volatile u32 *)SINGLETON;
-                *(volatile u16 *)v = 0;
-                for (int w = 1; w < 108; w++) dst[w] = src[w];
-                dst[0] = src[0] & 0xFFFF0000u;
-            }
-            /* A TYPE change made while this voice was fading never swapped its
-             * sounding type; a new note always starts on the selected one. */
-            if (v[0x70] != v[0x71]) v[0x70] = v[0x71];
-            STOCK_RESET(v);
-            env_age[i] = ++env_serial;
-            STOCK_NOTE(v, note, vel, r3, source);
-            return;
-        }
-        /* All four sound: take the oldest fading voice, else the oldest held one. */
         if ((u32)(note + 36) > 84) return;      /* the stock note-on ignores these */
-        int best = -1;
-        for (int pass = 0; pass < 2 && best < 0; pass++)
-            for (int i = 0; i < 4; i++) {
-                volatile u8 *v = voice(i);
-                if (v[0] && (pass ? !v[1] : v[1]) && (best < 0 || env_age[i] < env_age[best]))
-                    best = i;
-            }
-        if (best < 0) return;
-        volatile u8 *v = voice(best);
-        if (v[3]) return;                       /* REC export owns it; stock ignores the note */
-        if (!v[1]) stolen_add(field(v, 0x1AC), field(v, 0x19C));
-        u8 type = ((volatile u8 *)SINGLETON)[0x71];
-        DISPATCH_OFF();
-        if (v[1]) {                             /* stop the fade, keep the voice sounding */
-            *(volatile int *)(v + 0x4C) = 200;
-            v[1] = 0;
-        }
-        if (v[0x70] != type || v[0x71] != type) {   /* fading voices missed TYPE changes */
-            v[0x71] = type;
-            v[0x70] = type;
-            *(volatile int *)(v + 0x48) = *(volatile int *)(SINGLETON + 0x48);
-        }
-        env_restart[best] = 1;                  /* the declick covers the switch */
-        DISPATCH_ON();
-        env_age[best] = ++env_serial;
-        STOCK_NOTE(v, note, vel, r3, source);   /* sounding voice: retune in place */
-        *(volatile int *)(v + 0x1A0) = 1000;    /* no mono return-to-previous-note */
+        int got = claim();
+        if (got < 0) return;
+        volatile u8 *v = voice(got & 3);
+        STOCK_NOTE(v, note, vel, r3, source);   /* idle voice: start; sounding: retune in place */
+        v[0x194] = 0xFF;                        /* not a MIDI note: MIDI note-offs never match it */
+        if (got & STOLEN) *(volatile int *)(v + 0x1A0) = 1000;   /* no mono return-to-previous-note */
         return;
     }
     if (stolen_take(source, note)) return;
@@ -316,4 +405,71 @@ EXPORT void note_event(u32 self, int note, int vel, int r3, int source) {
             return;
         }
     }
+}
+
+/* ---- MIDI IN: the stock route plays voice 0 only; share the four voices. ----
+ * The MIDI dispatcher (0x8005a6a0) called the stock MIDI note function on
+ * voice 0. That function keeps the MIDI note in +0x194 and releases on it. */
+
+typedef void (*midi_fn)(volatile u8 *voice, int note, int vel, int r3);
+#define STOCK_MIDI ((midi_fn)0x80132119u)
+
+EXPORT void midi_event(u32 self, int note, int vel, int r3) {
+    (void)self;
+    if ((u32)note < 12) return;                 /* the stock function ignores these */
+    if (vel != 0) {
+        *(volatile u32 *)EXPORT_COUNT = 0;
+        int got = claim();
+        if (got < 0) return;
+        volatile u8 *v = voice(got & 3);
+        STOCK_MIDI(v, note, vel, r3);
+        *(volatile int *)(v + 0x1AC) = -1;      /* no pad: pad note-offs never match it */
+        *(volatile int *)(v + 0x19C) = note - 48;   /* the pad lights show this pitch */
+        return;
+    }
+    for (int i = 0; i < 4; i++) {               /* every voice still holding this key */
+        volatile u8 *v = voice(i);
+        if (v[0] && v[0x194] == (u8)note) STOCK_MIDI(v, note, 0, r3);
+    }
+}
+
+/* ---- Scale pads: on the Sound Generator page the 16 pads walk the scale. ----
+ * Stock pads are 16 semitones (-4..11 around pad 9) and a scale only silences
+ * the pads outside it. Here pad 9 plays the first scale note at or above its
+ * stock note and each pad steps one scale note, so a 7-note scale spans over
+ * two octaves and a pentatonic three. Chrom, and every other page (chromatic
+ * sample mode shares these settings and helpers), keep the stock layout. */
+
+#define KB 0x80591C48u                          /* keyboard: +4 OCT, +8 shift, +0xc SCALE, +0x10 root */
+#define PAD_SEMITONE ((const int *)0x801A9E60u)
+#define SCALE_MASKS ((const u8 *const *)0x801AB4A4u)
+#define PAGE (*(volatile short *)0x80245880u)
+#define SG_PAGE 0x1E
+
+static int kb(u32 off) { return *(volatile int *)(KB + off); }
+static int degree(int n, int root) { return (n - root + 120) % 12; }
+
+EXPORT int kb_pad_note(int pad) {
+    int t = PAD_SEMITONE[pad], n = t + 12*kb(4) - kb(8), scale = kb(0xC);
+    if (scale < 1 || scale > 6 || PAGE != SG_PAGE) return n;
+    const u8 *mask = SCALE_MASKS[scale - 1];
+    int root = kb(0x10);
+    n -= t;                                     /* pad 9's stock note */
+    while (!mask[degree(n, root)]) n++;
+    for (; t > 0; t--) do n++; while (!mask[degree(n, root)]);
+    for (; t < 0; t++) do n--; while (!mask[degree(n, root)]);
+    return n;
+}
+
+/* Pad lights: is this pad playable (stock: in the scale)? */
+EXPORT int kb_in_scale(int pad) {
+    int scale = kb(0xC);
+    if (scale < 1 || scale > 6 || PAGE == SG_PAGE) return 1;
+    int n = PAD_SEMITONE[pad] + 12*kb(4) - kb(8);
+    return SCALE_MASKS[scale - 1][degree(n, kb(0x10))] != 0;
+}
+
+/* Pad lights: the pad's note above the root, without the octave (stock helper). */
+EXPORT int kb_pad_rel(int pad) {
+    return kb_pad_note(pad) - 12*kb(4) - kb(0x10);
 }

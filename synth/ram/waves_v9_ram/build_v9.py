@@ -12,6 +12,9 @@ filter envelopes and voice stealing.
   ignored, so it cannot release another note.
 Everything else is v8: the 17 waves with raw DUTY grit, loudness tables, quiet
 Pulse/Noise, the OCT note-off fallback, the layout in unused SDRAM.
+v9.1-v9.4 add: REC and TYPE-display fixes, the REC end fade, the FREQ readout
+following the latest note, scale pads, MIDI IN on all four voices, and a fade
+instead of a cut when REC starts with notes held (see README below).
 
 Archived build helper; in this public repository use synth/build_v9.py.
 Its wrapper supplies the official stock input, verified base and compiler.
@@ -19,6 +22,7 @@ Its wrapper supplies the official stock input, verified base and compiler.
 import hashlib
 import json
 import math
+import re
 import shutil
 import struct
 import subprocess
@@ -35,11 +39,14 @@ import build_v7 as v7b  # noqa: E402  (also sets up the v3-v6 pipeline modules)
 v7b.v4b.HERE = v7b.v6b.HERE = HERE
 v3, v4b, v5b, v6b, v4, v2 = v7b.v3, v7b.v4b, v7b.v5b, v7b.v6b, v7b.v4, v7b.v3.v2
 load, call, jump = v3.load, v3.call, v3.jump
-OUT = ROOT / 'firmware' / 'doom-poly-waves-v9.1-ram'   # v9 + the fixes from its hardware test
+OUT = ROOT / 'firmware' / 'doom-poly-waves-v9.4-ram'   # v9.3 + scale pads, MIDI poly, REC fixes
 V8_MANIFEST = ROOT / 'firmware' / 'doom-poly-waves-v8-ram' / 'manifest.json'
 STOCK = ROOT / 'firmware' / 'v552' / 'sp404mk2_sys_v552' / 'SP404MKII_APP1.bin'
 CODE_BASE = v6b.CODE_BASE
 ENV_NAME = CODE_BASE + 0x200          # bridge for the ENV value text
+FREQ_TEXT = CODE_BASE + 0x240         # bridge: the FREQ readout shows the latest note's voice
+FREQ_TEXT_SITE = 0x80131CC8           # FREQ case of the value-text function
+FREQ_GET_SITE = 0x80020474            # FREQ case of the parameter getter
 ENV_STAGE_SITE = 0x80007E50           # stock ENV step at the end of the oscillator
 ENV_TEXT_SITE = 0x80131DF4            # ENV case of the value-text function
 SR = 48000
@@ -138,7 +145,9 @@ def read_module(data, link_base, limit):
 
 LINKER = v3.LINKER.replace('KEEP(*(.text.wave_name))',
                            'KEEP(*(.text.wave_name)) KEEP(*(.text.env_stage)) KEEP(*(.text.env_name)) '
-                           'KEEP(*(.text.note_event))')
+                           'KEEP(*(.text.note_event)) KEEP(*(.text.export_mix)) KEEP(*(.text.freq_get)) '
+                           'KEEP(*(.text.freq_event)) KEEP(*(.text.display_voice)) KEEP(*(.text.midi_event)) '
+                           'KEEP(*(.text.kb_pad_note)) KEEP(*(.text.kb_in_scale)) KEEP(*(.text.kb_pad_rel))')
 
 
 def compile_arm():
@@ -156,7 +165,9 @@ def compile_arm():
     elf = (folder / 'waves.elf').read_bytes()
     blob, symbols = read_module(elf, v6b.LINK_BASE, v6b.NONCACHE)
     needed = {'wave_output', 'wave_name', 'wave_eval', 'wave_core', 'env_stage', 'env_name',
-              'note_event', 'env_fast', 'env_slot', 'env_restart', 'env_age', 'stolen_valid'}
+              'note_event', 'export_mix', 'freq_get', 'freq_event', 'display_voice', 'display_slot',
+              'midi_event', 'kb_pad_note', 'kb_in_scale', 'kb_pad_rel',
+              'env_fast', 'env_slot', 'env_restart', 'env_age', 'stolen_valid'}
     if not needed <= set(symbols):
         raise ValueError(f'module exports missing: {sorted(needed - set(symbols))}')
     (folder / 'waves.bin').write_bytes(blob)
@@ -198,6 +209,17 @@ def gate_sources(symbols):
                 mov r1, r4
                 {call(symbols['env_name'])}
                 {jump(0x80131C78)}
+            '''),
+            (FREQ_TEXT, FREQ_TEXT + 0x40, f'''
+                ldrb.w r2, [r0, #0x71]
+                cmp r2, #31
+                bhi no_note
+                push {{r1, r2}}
+                {call(symbols['display_voice'])}
+                pop {{r1, r2}}
+                {jump(0x80131CD2)}
+            no_note:
+                {jump(0x80131E20)}
             ''')]
 
 
@@ -283,16 +305,116 @@ def build_image(module, symbols, base=None):
         raise ValueError('v4 export source changed')
     image = replace(image, v4.EXPORT_ENGINE, old_export, new_export)
     v9_hooks.append([v4.EXPORT_ENGINE, len(old_export)])
+    # REC mixer -> export_mix (same mix, plus the one-shot end fade). Entered by a
+    # jump from the oscillator gate, so sp and r10/r11 are still the exporter's.
+    size = v4.OSC_GATE - v4.EXPORT_SAMPLE
+    old_mix = v3.asm(v4.sample_source(), v4.EXPORT_SAMPLE).ljust(size, b'\0')
+    mix = v3.asm('ldr r2, [sp, #4]\nmov r0, r10\nmov r1, r11\n' + jump(symbols['export_mix']),
+                 v4.EXPORT_SAMPLE)
+    image = replace(image, v4.EXPORT_SAMPLE, old_mix, mix)
+    v9_hooks.append([v4.EXPORT_SAMPLE, size])
+    # FREQ follows the latest note: getter case, readout text, and the knob's transpose.
+    get_old = (v3.asm('ldrb.w r1, [r0, #0x71]\ncmp r1, #0x1f', FREQ_GET_SITE) +
+               stock_bytes(FREQ_GET_SITE + 6, 6))           # bhi 0x800204b4; ldr r0, [r0, #0x5c]; bx lr
+    image = replace(image, FREQ_GET_SITE, get_old, v3.asm(jump(symbols['freq_get']) + 'nop\n', FREQ_GET_SITE))
+    text_old = (v3.asm('ldrb.w r2, [r0, #0x71]\ncmp r2, #31', FREQ_TEXT_SITE) +
+                stock_bytes(FREQ_TEXT_SITE + 6, 4))         # bhi.w 0x80131e20
+    image = replace(image, FREQ_TEXT_SITE, text_old, v3.asm(jump(FREQ_TEXT), FREQ_TEXT_SITE))
+    size = v4.TUNE_RESET - v4.FREQ_ENGINE
+    old_freq = v3.asm(v4.freq_source(), v4.FREQ_ENGINE).ljust(size, b'\0')
+    image = replace(image, v4.FREQ_ENGINE, old_freq, v3.asm(jump(symbols['freq_event']), v4.FREQ_ENGINE))
+    v9_hooks += [[FREQ_GET_SITE, len(get_old)], [FREQ_TEXT_SITE, len(text_old)], [v4.FREQ_ENGINE, size]]
+
+    def stock_span(address, end, source):
+        nonlocal image
+        new = v3.asm(source, address)
+        if len(new) > end - address or (end - address - len(new)) % 2:
+            raise ValueError(f'patch at {address:#x} does not fit')
+        # Keystone mis-encodes some absolute branches (beq.w #0x8015bfa6 came out as
+        # beq.w #0x800b8036): every direct branch must hit a target named in the source.
+        named = {int(t, 16) for t in re.findall(r'#(0x[0-9a-fA-F]+)', source)}
+        md = capstone.Cs(capstone.CS_ARCH_ARM, capstone.CS_MODE_THUMB | capstone.CS_MODE_MCLASS)
+        for ins in md.disasm(new, address):
+            if ins.mnemonic.startswith(('b', 'cb')) and ins.op_str.split(', ')[-1].startswith('#'):
+                target = int(ins.op_str.split('#')[-1], 16)
+                if target not in named and not address <= target < address + len(new):
+                    raise ValueError(f'patch at {address:#x}: branch at {ins.address:#x} to {target:#x}')
+        image = replace(image, address, stock_bytes(address, end - address),
+                        new + b'\0\xbf' * ((end - address - len(new)) // 2))
+        v9_hooks.append([address, end - address])
+
+    # Scale pads: the pad helpers used by the pad lights, and the SG page's own
+    # note-on/note-off pad maths, all take kb_pad_note's note.
+    for address, symbol in ((0x80030C88, 'kb_pad_note'), (0x80030FA8, 'kb_in_scale'),
+                            (0x80030E98, 'kb_pad_rel')):
+        stock_span(address, address + 12, jump(symbols[symbol]) + 'nop\n')
+    stock_span(0x8015C070, 0x8015C0C8,           # note-on; off the SG page, stock's out-of-scale skip
+               'mov r0, r4\n' + call(symbols['kb_pad_note']) + 'mov r6, r0\nmov r0, r4\n' +
+               call(symbols['kb_in_scale']) + 'cmp r0, #0\nbeq #0x8015bfa6\nb #0x8015c0c8\n')
+    stock_span(0x8015C4D0, 0x8015C4F0,           # note-off: same note, then the v2 dispatcher call
+               'mov r0, r4\n' + call(symbols['kb_pad_note']) +
+               'mov r1, r0\nmovs r2, #0\nmovs r3, #1\nstr r4, [sp]\n')
+    # MIDI IN: the dispatcher's voice-0 call goes to the four-voice MIDI engine.
+    stock_span(0x8005A694, 0x8005A6A4, 'uxtb r2, r5\nmov r3, r6\n' + call(symbols['midi_event']) + 'nop\n')
+    # REC with notes held: fade the voices (all-stop) instead of cutting them.
+    old_init, new_init = v4.capture_init_source(), v4.capture_init_source().replace(
+        v4.call(v2.INIT_ALL_WRAPPER), v4.call(v4.RELEASE_ENGINE))
+    if old_init == new_init:
+        raise ValueError('v4 capture/init source changed')
+    size = v4.LED_MATCH - v4.CAPTURE_INIT
+    image = replace(image, v4.CAPTURE_INIT, v3.asm(old_init, v4.CAPTURE_INIT).ljust(size, b'\0'),
+                    v3.asm(new_init, v4.CAPTURE_INIT))
+    v9_hooks.append([v4.CAPTURE_INIT, size])
     info['hooks'] += [[a, len(v3.asm(b, a))] for a, b, _ in v5b.EXTRA] + v9_hooks
     info['v9_hooks'] = v9_hooks
     return image, info
 
 
-README = """DOOM/poly-v4 + 17 Wave Lab waves, v9.1 (RAM, no memory taken) -- 2026-10-07
+README = """DOOM/poly-v4 + 17 Wave Lab waves, v9.4 (RAM, no memory taken) -- 2026-10-07
 ============================================================================
 
-Built by the Claude session (waves_v9_ram/build_v9.py). v9.1 = v9 plus three
-fixes from your v9 hardware test:
+Built by the Claude session (waves_v9_ram/build_v9.py). v9.4 = v9.3 plus:
+
+- Scale pads. With a SCALE other than Chrom, the 16 pads walk the scale
+  instead of the semitones: no dark out-of-scale pads, and one bank covers
+  two octaves and a step (7-note scales) or three full octaves (pentatonic).
+  Pad 9 plays the first scale note at or above the note it played before,
+  and the pads keep their order (bottom row lowest, top row highest, left to
+  right), each one scale step above the one before. The pad lights keep
+  their stock meaning (root pads, below / above the root). NOTE, OCT and the
+  shift setting work as before. Chrom, and every other screen that shares
+  the keyboard settings, are unchanged.
+- MIDI IN plays all four voices (it was voice 0 only), with the same voice
+  stealing as the pads. A held MIDI note lights the pad with the same pitch.
+- Pressing REC while holding notes fades them out (~8 ms) instead of cutting
+  them, so no click.
+- Recording fade: every recording with an ENV preset fades out at the end.
+  ENV OFF with Pad Length in periods and START/END on still ends on a whole
+  cycle, so raw-wave loops stay seamless (v9.3 skipped the fade there even
+  with a preset).
+
+v9.3 = v9.2 plus:
+
+- The FREQ readout follows the note you just played. It used to show voice
+  0's note only, and with long releases voice 0 is often still fading, so
+  new notes went to the other voices and the readout stayed on the old note.
+- The FREQ knob steps from the note on the screen and moves every held note
+  by the same amount, as before. If the note on the screen is fading out, the
+  readout moves to the newest held note, so it always shows a note that moved.
+- Pitch was measured and is exact (0.00 cents on every voice); only the
+  readout was wrong.
+
+v9.2 = your hardware-tested v9.1 plus one fix:
+
+- No click at the end of a recorded pad. REC renders a fixed length (Pad
+  Length) and used to stop wherever the sound was, so anything still sounding
+  (Pad, Swell, Keys, the filter presets, and ENV OFF too) ended with a hard
+  cut. Recordings now fade out over their last 10 ms (the last quarter on very
+  short pads). The exception is a whole-cycle loop, Pad Length in periods with
+  START/END on: the exporter trims those to whole cycles so they loop
+  seamlessly, and they stay exactly as before.
+
+v9.1 = v9 plus three fixes from your v9 hardware test:
 
 - REC records the envelope again. v9 gave a blank pad: the stock exporter marks
   its own voice inactive while it renders it, and v9's envelope took that as
@@ -325,9 +447,9 @@ Files (use BOTH, together):
   SP404MKII_APP1.bin  {app1_size:,} bytes  SHA-256 {app1_sha}
   SP404MKII_APP0.bin  {app0_size:,} bytes  SHA-256 {app0_sha}  (Roland stock)
 
-Status: verified in emulation (waves_v9_ram/test_v9.py), including a REC through
-the real stock exporter. v9.1 itself is NOT run on hardware yet.
-Roll back with doom-poly-waves-v8-ram, doom-poly-v4-releasefix or Roland 5.52.
+Status: verified in emulation (waves_v9_ram/test_v9.py), including REC through
+the real stock exporter. v9.1 passed your hardware test; v9.4 is NOT run on
+hardware yet. Roll back with doom-poly-waves-v9.3-ram or v9.1-ram.
 """
 
 
@@ -346,7 +468,7 @@ def main():
     OUT.mkdir(parents=True)
     (OUT / 'SP404MKII_APP1.bin').write_bytes(image)
     (OUT / 'SP404MKII_APP0.bin').write_bytes(app0)
-    info.update(revision='v9.1-ram', status='hardware-unverified', execution='sdram-gap',
+    info.update(revision='v9.4-ram', status='hardware-unverified', execution='sdram-gap',
                 symbols=symbols, base_sha256=v3.BASE_SHA, sha256=v3.sha(image), size=len(image),
                 module_sha256=v3.sha(module), wave_level_sha256=v8['wave_level_sha256'],
                 waves_c_sha256=v3.sha((HERE / 'waves.c').read_bytes()),

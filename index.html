@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tracelistener · SP-404MKII synth patcher</title>
-<meta name="description" content="Tracelistener's SP-404MKII Sound Generator v9.1 mod: four voices, 17 added waves and volume/filter-envelope presets. Local browser patching; no firmware uploads.">
+<meta name="description" content="Tracelistener's SP-404MKII Sound Generator v9.4 mod: four voices, 17 added waves, volume/filter-envelope presets and scale pads. Local browser patching; no firmware uploads.">
 <style>
 
 :root {
@@ -166,9 +166,9 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
     <span class="n">01</span>
     <div class="body">
       <h1>SP-404MKII synth patcher</h1>
-      <p class="lede">Tracelistener's Sound Generator v9.1 mod: four live voices, 17 added waves and volume/filter-envelope presets. Your firmware stays in your browser; nothing is uploaded.</p>
+      <p class="lede">Tracelistener's Sound Generator v9.4 mod: four live voices, 17 added waves, volume/filter-envelope presets and scale pads. Your firmware stays in your browser; nothing is uploaded.</p>
       <dl class="facts">
-        <div><dt>Synth build</dt><dd>v9.1</dd></div>
+        <div><dt>Synth build</dt><dd>v9.4</dd></div>
         <div><dt>Live voices</dt><dd>4</dd></div>
         <div><dt>Added waves</dt><dd>17</dd></div>
         <div><dt>ENV presets</dt><dd>9 + OFF</dd></div>
@@ -181,7 +181,7 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
       <div class="body">
         <p class="t">Compatible with stock firmware <strong data-doomos="firmware-list"></strong>. Select Sound Generator to include the mod; unchecked generates the base build without these synth additions.</p>
         <div id="doomos-patcher"></div>
-        <p class="t">Owner reports v9.1 working on hardware; CPU headroom remains unmeasured. Our <a class="inline" href="https://github.com/tracelistener/doom-os-etc./blob/main/synth/V9.md">v9.1 changes and test instructions</a> · <a class="inline" href="https://github.com/tracelistener/doom-os-etc./blob/main/synth/WAVES.md">wave list</a> · <a class="inline" href="https://github.com/tracelistener/doom-os-etc.">source code</a> · <a class="inline" href="https://tracelistener.github.io/sp404mk2-sound-generator/">Wave Lab preview</a></p>
+        <p class="t">v9.4 passes all 32 emulator checks; the owner's hardware test is in progress (v9.1 was reported working on hardware). CPU headroom remains unmeasured. Our <a class="inline" href="https://github.com/tracelistener/doom-os-etc./blob/main/synth/V9.md">v9.4 changes and test instructions</a> · <a class="inline" href="https://github.com/tracelistener/doom-os-etc./blob/main/synth/WAVES.md">wave list</a> · <a class="inline" href="https://github.com/tracelistener/doom-os-etc.">source code</a> · <a class="inline" href="https://tracelistener.github.io/sp404mk2-sound-generator/">Wave Lab preview</a></p>
         <details class="env-guide">
           <summary>Envelope preset guide (ENV)</summary>
           <p class="t">In Sound Generator, choose ENV, then play a new note to hear the selected preset. Each voice takes its envelope when the note starts. Presets work on stock and added waves, four-voice playback and held-chord REC.</p>
@@ -195,6 +195,11 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
           </ul>
           <p class="t">ENV selects fixed presets, not separate ADSR knobs. Release tails continue after note-off; all-stop still cuts them with the stock fade. These are custom envelopes/filter, not a ZEN-Core port.</p>
         </details>
+        <details class="env-guide">
+          <summary>Scale pads and MIDI IN (v9.4)</summary>
+          <p class="t">Set SCALE to anything other than Chrom and the 16 pads play only that scale's notes, one scale step per pad, from the bottom row (lowest) to the top row (highest). Pad 9 plays the first scale note at or above its usual note, so one bank spans two octaves and a step with a 7-note scale, or three octaves with a pentatonic one. Chrom and the other screens work as before.</p>
+          <p class="t">MIDI IN plays all four voices, with the same voice stealing as the pads; a held MIDI note lights the pad with the same pitch. Recordings with an ENV preset fade out at the end, and pressing REC while holding notes fades them instead of cutting them.</p>
+        </details>
       </div>
     </article>
     <article class="row">
@@ -203,7 +208,7 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
         <h2>Prepare your test update</h2>
         <ol class="steps">
           <li>Back up your samples, projects and settings. Keep the original Roland 5.52 update and your working build.</li>
-          <li>Load the unmodified stock 5.52 <code>SP404MKII_APP1.bin</code> above. Select Sound Generator for v9.1: four voices, all 17 new waves and envelopes/filter presets together.</li>
+          <li>Load the unmodified stock 5.52 <code>SP404MKII_APP1.bin</code> above. Select Sound Generator for v9.4: four voices, all 17 new waves, envelopes/filter presets and scale pads together.</li>
           <li>Download the result as <code>SP404MKII_APP1.bin</code>. Use it with the unchanged official 5.52 <code>SP404MKII_APP0.bin</code> and your established SD-card update procedure.</li>
           <li>For chord REC, hold the chord while entering REC, then release and finish the normal destination workflow. Return to the known-good update for hangs, stuck notes or audio breakup.</li>
         </ol>
@@ -215,8 +220,8 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
     <p class="note">Unofficial; not affiliated with Roland or Klangfeld Labs. Base attribution: DOOM OS 0.6.1 ED5E by Quintus Oostendorp / Klangfeld Labs, MIT License retained in the repository. This page cannot flash your SP automatically.</p>
   </footer>
 </div>
-<script src="synth-data.js?v=waves-v9-1-dad6f0d4"></script>
-<script src="waves-data.js?v=waves-v9-1-dad6f0d4"></script>
+<script src="synth-data.js?v=waves-v9-4-7ee9d36e"></script>
+<script src="waves-data.js?v=waves-v9-4-7ee9d36e"></script>
 <script src="doomos-patcher.js?v=synth-v9-1-env-guide"></script>
 </body>
 </html>

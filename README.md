@@ -2,8 +2,8 @@
 
 **[Open the synth patcher](https://tracelistener.github.io/doom-os-etc./)**
 
-Sound Generator **v9.1** adds four live voices, 17 new waveforms and nine
-volume/filter-envelope presets to the SP-404MKII. Firmware processing happens
+Sound Generator **v9.4** adds four live voices, 17 new waveforms, nine
+volume/filter-envelope presets and scale pads to the SP-404MKII. Firmware processing happens
 locally in your browser; nothing is uploaded. Select the single Sound Generator
 option to include the mod. It is OFF by default; unchecked generates the base
 build without these synth additions.
@@ -14,15 +14,19 @@ build without these synth additions.
 - 17 added waves: FM1:1, FM1:2, FM1:7, CZSaw, CZSqr, CZRes, Sync, Fold,
   Drive, LPSaw, LPSqr, Organ, Vowel, Table, Logic, Metal and Grit.
 - Nine timed ENV presets; four also have a resonant low-pass/filter envelope.
-- Held-chord REC, voice stealing and fixes for release, OCT note-off,
-  FREQ/ENV/START-END and stale TYPE selection/display.
+- Scale pads: with a SCALE set, the 16 pads play only scale notes, so one
+  bank spans two to three octaves.
+- MIDI IN on all four voices, with the same voice stealing as the pads.
+- Held-chord REC with no clicks (fade at the end and when REC starts), voice
+  stealing and fixes for release, OCT note-off, FREQ/ENV/START-END, the FREQ
+  readout and stale TYPE selection/display.
 - Loudness/DC matching and quieter Pulse/Noise, while retaining raw DUTY
   jitter and Sync/CZRes aliasing grit. Stock waves, including Saw2, remain.
 
 This does not turn normal sample pads or patterns into live synth pads.
 No ZEN-Core/MC-101 engine is included.
 
-## Sound Generator envelopes (v9.1)
+## Sound Generator envelopes (v9.4)
 
 In Sound Generator, select **ENV** and choose a preset. Play a new note after
 changing ENV: each voice takes its preset when the note starts. These replace
@@ -47,7 +51,18 @@ other five non-OFF presets shape volume only. The filter tracks note pitch.
 Release tails continue after note-off, while all-stop still uses the short
 stock fade. ENV is a preset selector, not separate ADSR/filter parameter knobs.
 REC renders the held chord with its selected envelope, not a live performance.
-See [the complete v9.1 notes](synth/V9.md).
+See [the complete v9.4 notes](synth/V9.md).
+
+## Scale pads (v9.4)
+
+Set **SCALE** to anything other than Chrom and the 16 pads play only notes of
+that scale, one scale step per pad, from the bottom row (lowest) to the top
+row (highest), left to right. Pad 9 plays the first scale note at or above its
+usual note. One bank then spans two octaves and a step with a 7-note scale, or
+three octaves with a pentatonic one. The pad lights keep their meaning (root,
+below and above the root). Chrom, NOTE, OCT and the other screens work as
+before. MIDI IN now plays all four voices, and a held MIDI note lights the pad
+with the same pitch.
 
 ## How to install
 
@@ -60,7 +75,7 @@ You can also download this repository as a ZIP file (under the Code button), unz
 ### Manual installation
 
 1. Download the 5.52 system update from [Roland's support page](https://www.roland.com/global/support/by_product/sp-404mk2/updates_drivers/) and unzip it.
-2. Open [our patcher](https://tracelistener.github.io/doom-os-etc./) and load the stock `SP404MKII_APP1.bin`. Select Sound Generator for v9.1: four voices, 17 new waves and envelopes. The patcher only accepts official 5.52 and checks the result against [the fork's checksums](synth/checksums.txt).
+2. Open [our patcher](https://tracelistener.github.io/doom-os-etc./) and load the stock `SP404MKII_APP1.bin`. Select Sound Generator for v9.4: four voices, 17 new waves, envelopes and scale pads. The patcher only accepts official 5.52 and checks the result against [the fork's checksums](synth/checksums.txt).
 3. Download the patched `SP404MKII_APP1.bin` and use it with the unchanged official 5.52 `SP404MKII_APP0.bin` for your test update. Back up first and keep your known-good update for rollback.
 4. Insert the card, hold **SHIFT** while you turn the SP on, and press the **VALUE** knob when the update menu appears.
 5. When the update is done, turn the SP off and on again.
@@ -69,12 +84,14 @@ To go back to the original firmware, just run the updater with the original Rola
 
 ## Status
 
-The owner reported **v9.1 working on hardware on 2026-10-07**; test coverage
-was unspecified and CPU headroom remains unmeasured. The 24 v9.1 emulator
-checks, 10 byte-exact stereo/mono export cases and 135 publication/regression
-checks pass. This remains experimental; four loud voices can clip.
+**v9.4** (2026-10-07) passes all 32 emulator checks and its source rebuilds
+byte-for-byte to the published image; the owner's hardware test is in
+progress. The previous build, v9.1, was reported working on hardware on
+2026-10-07 (test coverage unspecified). CPU headroom remains unmeasured. All
+135 publication/regression checks and the browser patcher test pass. This
+remains experimental; four loud voices can clip.
 
-See [the v9.1 build and test notes](synth/V9.md),
+See [the v9.4 build and test notes](synth/V9.md),
 [the wave list](synth/WAVES.md) and [integration notes](synth/README.md).
 Report synth bugs with the build, waveform, ENV preset, number of held notes
 and steps to reproduce. Preserve your backups and known-good firmware pair.

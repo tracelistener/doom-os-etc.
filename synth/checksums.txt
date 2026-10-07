@@ -14,3 +14,5 @@ DOOM-poly-v4-WaveLab-v3-budget-candidate  a402213664c687324d7140b6ffafecf528482a
 DOOM-poly-v4-WaveLab-v8-ram  12dbeae4c85722e3109aa2359102e8525c0c5e3729fb64126456abd83ae283c7  2961072
 # V9.1 RAM: owner reported hardware working 2026-10-07; coverage unspecified, CPU headroom unmeasured.
 DOOM-poly-v4-SoundGenerator-v9.1-ram  dad6f0d4baa3d26a613b86dc92e7ab1d3765c10e8a532e2dd3eefdf5093a1c33  2966032
+# V9.4 RAM: scale pads, MIDI IN on four voices, REC fades. 32 emulator checks; owner hardware test in progress.
+DOOM-poly-v4-SoundGenerator-v9.4-ram  7ee9d36eb5e86ad17deba3586ce5b8dc47401806ee3d14f54399f5eff18b64b5  2968336

@@ -2,9 +2,9 @@
   "base_sha256": "1b295c877f61c445f761a8a607ddb4f34327ba0875de002ebedb0a6d9cf0e18e",
   "code_base": 2214068224,
   "code_file": 2835472,
-  "code_size": 130320,
+  "code_size": 132624,
   "duty": "raw (stock integer DUTY, no smoothing)",
-  "env_c_sha256": "0e7645bd084d2bb9e82bbeeda095457eaadb4b369bb894912316ea9bf38dc582",
+  "env_c_sha256": "2de8c173b9dc105c304163698d2639eb5885763d7c2d2e012f6a9f8ee9d805b2",
   "env_presets": {
     "Acid": {
       "filter": [
@@ -383,9 +383,53 @@
     [
       2203301760,
       224
+    ],
+    [
+      2203302400,
+      256
+    ],
+    [
+      2147615860,
+      12
+    ],
+    [
+      2148736200,
+      10
+    ],
+    [
+      2203300416,
+      448
+    ],
+    [
+      2147683464,
+      12
+    ],
+    [
+      2147684264,
+      12
+    ],
+    [
+      2147683992,
+      12
+    ],
+    [
+      2148909168,
+      88
+    ],
+    [
+      2148910288,
+      32
+    ],
+    [
+      2147853972,
+      16
+    ],
+    [
+      2203301120,
+      80
     ]
   ],
-  "module_sha256": "65ba5b800817fadb2e5f67e5bd180524e9b0d070449c4aa22b5bbf4f73bf53ac",
+  "module_sha256": "9d49c11d7a9d2fc7c2aee7bd4907767345d63ed714dd791ff72446f378cbf4c6",
   "note_off": "stolen notes ignored; exact note+source; else one non-releasing voice of that source",
   "polyblep": [],
   "pool_base": 2203310124,
@@ -396,28 +440,37 @@
     "13": "Noise1",
     "14": "Noise2"
   },
-  "revision": "v9.1-ram",
+  "revision": "v9.4-ram",
   "sdram_gap": [
     "0x83f7a424",
     "0x83ff0000"
   ],
-  "sha256": "dad6f0d4baa3d26a613b86dc92e7ab1d3765c10e8a532e2dd3eefdf5093a1c33",
-  "size": 2966032,
+  "sha256": "7ee9d36eb5e86ad17deba3586ce5b8dc47401806ee3d14f54399f5eff18b64b5",
+  "size": 2968336,
   "status": "hardware-unverified",
   "stealing": "oldest fading voice, else oldest held; 2 ms declick; stolen note-offs ignored",
   "symbols": {
-    "env_age": 2214198452,
-    "env_fast": 2214198440,
+    "display_slot": 2214200736,
+    "display_voice": 2214073079,
+    "env_age": 2214200740,
+    "env_fast": 2214200728,
     "env_name": 2214071045,
-    "env_restart": 2214198432,
-    "env_slot": 2214198112,
+    "env_restart": 2214200720,
+    "env_slot": 2214200400,
     "env_stage": 2214069377,
+    "export_mix": 2214072259,
+    "freq_event": 2214072495,
+    "freq_get": 2214072439,
+    "kb_in_scale": 2214073905,
+    "kb_pad_note": 2214073381,
+    "kb_pad_rel": 2214074025,
+    "midi_event": 2214073121,
     "note_event": 2214071129,
-    "stolen_valid": 2214198532,
-    "wave_core": 2214073297,
+    "stolen_valid": 2214200824,
+    "wave_core": 2214074545,
     "wave_eval": 2214069249,
     "wave_name": 2214069305,
-    "wave_output": 2214077217
+    "wave_output": 2214078465
   },
   "tables_sha256": "8d59eb235dc4dcb69906f91f17547ebfe9bc2c2f71e9002162f3995a9bdfb2b9",
   "types": {
@@ -507,6 +560,50 @@
     [
       2203301760,
       224
+    ],
+    [
+      2203302400,
+      256
+    ],
+    [
+      2147615860,
+      12
+    ],
+    [
+      2148736200,
+      10
+    ],
+    [
+      2203300416,
+      448
+    ],
+    [
+      2147683464,
+      12
+    ],
+    [
+      2147684264,
+      12
+    ],
+    [
+      2147683992,
+      12
+    ],
+    [
+      2148909168,
+      88
+    ],
+    [
+      2148910288,
+      32
+    ],
+    [
+      2147853972,
+      16
+    ],
+    [
+      2203301120,
+      80
     ]
   ],
   "wave_level_sha256": "1815a05a2d8013785db22047dd838ab4c082d1f4e573fec6418d63b4e3cf8bd5",

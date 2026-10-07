@@ -113,12 +113,14 @@ async function choose(page, bytes, name = 'SP404MKII_APP1.bin') {
   assert.equal(wavePage.get('synthPoly').checked,false,'combined candidate remains opt-in');
   const panel = wavePage.get('doomos-patcher').innerHTML;
   assert.equal((panel.match(/type="checkbox"/g) || []).length,1,'one combined option');
-  assert.match(panel,/Sound Generator v9\.1 \(4 voices \+ 17 new waves \+ envelopes\)/);
+  assert.match(panel,/Sound Generator v9\.4 \(4 voices \+ 17 new waves \+ envelopes\)/);
   assert.doesNotMatch(panel,/synthWaves|Experimental fork addition|Shared controls|No DUTY smoother/);
   const html = fs.readFileSync(path.join(root,'index.html'),'utf8');
   const readme = fs.readFileSync(path.join(root,'README.md'),'utf8');
   assert.match(html,/Envelope preset guide \(ENV\)/);
-  assert.match(readme,/Sound Generator envelopes \(v9\.1\)/);
+  assert.match(readme,/Sound Generator envelopes \(v9\.4\)/);
+  assert.match(readme,/## Scale pads \(v9\.4\)/);
+  assert.match(html,/Scale pads and MIDI IN \(v9\.4\)/);
   assert.doesNotMatch(readme,/Pattern sequencer with a graphical interface|## Main controls|## Upstream plans|## Improvements/);
   assert.doesNotMatch(html,/DOOM OS base|Base released|data-doomos="version"|data-doomos="build"/);
   for (const name of ['OFF','Pluck','Perc','Keys','Pad','Swell','Bass','Acid','Sweep','FPad']) {
@@ -126,14 +128,14 @@ async function choose(page, bytes, name = 'SP404MKII_APP1.bin') {
     assert.ok(readme.includes('| '+name+' |'), 'README documents ENV preset '+name);
   }
   assert.doesNotMatch(html,/For V8, start at modest LEVEL|Uncheck Wave Lab|Expected Wave Lab V8 APP1/);
-  assert.equal(wavePage.context.window.DOOMOS_WAVES.revision,'v9.1-ram');
-  assert.equal(wavePage.context.window.DOOMOS_WAVES.sha256,'dad6f0d4baa3d26a613b86dc92e7ab1d3765c10e8a532e2dd3eefdf5093a1c33');
-  assert.equal(wavePage.context.window.DOOMOS_WAVES.size,2966032);
+  assert.equal(wavePage.context.window.DOOMOS_WAVES.revision,'v9.4-ram');
+  assert.equal(wavePage.context.window.DOOMOS_WAVES.sha256,'7ee9d36eb5e86ad17deba3586ce5b8dc47401806ee3d14f54399f5eff18b64b5');
+  assert.equal(wavePage.context.window.DOOMOS_WAVES.size,2968336);
   assert.equal(wavePage.context.window.DOOMOS_WAVES.execution,'sdram-gap');
   assert.equal(wavePage.context.window.DOOMOS_WAVES.pool_unchanged_from_v4,true);
   assert.equal(wavePage.context.window.DOOMOS_WAVES.polyblep.length,0);
   assert.match(wavePage.context.window.DOOMOS_WAVES.duty,/raw.*no smoothing/);
-  assert.equal(wavePage.context.window.DOOMOS_WAVES.status,'owner-reported-hardware-working');
+  assert.equal(wavePage.context.window.DOOMOS_WAVES.status,'hardware-test-in-progress');
   assert.equal(wavePage.context.window.DOOMOS_WAVES.hardware_validation.cpu_headroom,'unmeasured');
   assert.equal(wavePage.context.window.DOOMOS_WAVES.release_fix,true);
   assert.equal(wavePage.context.window.DOOMOS_WAVES.noise_freq_label_fix,true);
@@ -149,7 +151,7 @@ async function choose(page, bytes, name = 'SP404MKII_APP1.bin') {
   await choose(wavePage,stock);
   await wavePage.get('patch').listeners.click();
   assert.equal(digest(new Uint8Array(await wavePage.blob().arrayBuffer())),waveResult.digest);
-  assert.match(wavePage.get('status').textContent,/Sound Generator \(4 voices, 17 new waves, envelopes, v9\.1\)/);
+  assert.match(wavePage.get('status').textContent,/Sound Generator \(4 voices, 17 new waves, envelopes, v9\.4\)/);
   assert.equal(wavePage.get('synthPoly').disabled,true);
   wavePage.get('reset').listeners.click();
   assert.equal(wavePage.get('synthPoly').disabled,false);
@@ -169,5 +171,5 @@ async function choose(page, bytes, name = 'SP404MKII_APP1.bin') {
   assert.equal(wavePage.get('synthPoly').disabled,false,'failed patch unlocks combined option');
   assert.doesNotMatch(fs.readFileSync(path.join(root,'README.md'),'utf8'),/<img[^>]*doom-os-512/);
   assert.doesNotMatch(html,/<img[^>]*doom-os/);
-  console.log('PASS: single combined option, exact stock DOOM/poly-v4/v9.1 downloads, reset, header-image removal, hash gates and corrupt-overlay rejection.');
+  console.log('PASS: single combined option, exact stock DOOM/poly-v4/v9.4 downloads, reset, header-image removal, hash gates and corrupt-overlay rejection.');
 })().catch(error => { console.error(error); process.exitCode = 1; });
