@@ -1,9 +1,5 @@
 # Tracelistener's SP-404MKII synth patcher (DOOM OS fork)
 
-<p align="center">
-  <img src="assets/doom-os-512.png" alt="DOOM OS">
-</p>
-
 DOOM OS is a heavily modified version of the original 5.52 firmware. It adds a graphical pattern
 sequencer, a mixer, effect automation, custom shortcuts and more, and improves parts of the original
 firmware. You patch it yourself, in your browser, using the official firmware file from Roland.
@@ -18,14 +14,17 @@ This fork adds **experimental four-voice Sound Generator polyphony from our
 poly-test-v4 firmware**, plus **17 Wave Lab waveforms as types 15–31**.
 Use [our online patcher](https://tracelistener.github.io/doom-os-etc./), or
 open this fork's `index.html` locally to select the single Sound Generator option. The combined
-v8 RAM candidate restores raw DUTY and the v3 Sync/CZRes recipes, with no DUTY
+v9.1 RAM build retains raw DUTY and the v3 Sync/CZRes recipes, with no DUTY
 smoother or PolyBLEP. It retains v7 loudness/DC matching, quieter Pulse/Noise,
 OCT note-off, FREQ/ENV/START-END and release fixes. Raw knob jitter and aliasing
-are intentional. All 13 original v8 emulator checks pass, **not hardware validation**.
-The combined Sound Generator option is off by default; select it for V8 with
-four voices and all 17 new waves. Unselected, the page produces plain DOOM OS 0.6.1.
+are intentional. V9.1 adds nine volume/filter-envelope presets and voice stealing,
+and fixes REC silence and stale TYPE selection/display. Its 24 emulator checks
+and 10 byte-exact stereo/mono export cases pass. **The owner reported the hardware
+test working on 2026-10-07; coverage was unspecified and CPU headroom is unmeasured.**
+The combined Sound Generator option is off by default; select it for v9.1 with
+four voices, all 17 new waves, envelopes and stealing. Unselected, the page produces plain DOOM OS 0.6.1.
 See [the integration notes](synth/README.md),
-[v8 build/test instructions](synth/V8.md) and [the wave list](synth/WAVES.md).
+[v9.1 build/test instructions](synth/V9.md) and [the wave list](synth/WAVES.md).
 
 **[Open our web patcher: DOOM OS + polyphony + 17 waves](https://tracelistener.github.io/doom-os-etc./)**
 
@@ -62,7 +61,7 @@ You can also download this repository as a ZIP file (under the Code button), unz
 ### Manual installation
 
 1. Download the 5.52 system update from [Roland's support page](https://www.roland.com/global/support/by_product/sp-404mk2/updates_drivers/) and unzip it.
-2. Open [our patcher](https://tracelistener.github.io/doom-os-etc./) and load the stock `SP404MKII_APP1.bin`. Select Sound Generator for four voices and all 17 new waves in the V8 RAM candidate; leaving it off produces plain DOOM OS 0.6.1. Everything happens in your browser, nothing is uploaded. The patcher only accepts official 5.52 and checks the result against [the fork's checksums](synth/checksums.txt).
+2. Open [our patcher](https://tracelistener.github.io/doom-os-etc./) and load the stock `SP404MKII_APP1.bin`. Select Sound Generator for v9.1: four voices, 17 new waves, envelopes and voice stealing; leaving it off produces plain DOOM OS 0.6.1. Everything happens in your browser, nothing is uploaded. The patcher only accepts official 5.52 and checks the result against [the fork's checksums](synth/checksums.txt).
 3. Download the patched `SP404MKII_APP1.bin` and use it with the unchanged official 5.52 `SP404MKII_APP0.bin` for your test update. Back up first and keep your known-good update for rollback.
 4. Insert the card, hold **SHIFT** while you turn the SP on, and press the **VALUE** knob when the update menu appears.
 5. When the update is done, turn the SP off and on again.

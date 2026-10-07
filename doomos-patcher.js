@@ -201,7 +201,7 @@ if (typeof module === 'object' && module.exports) {
       '<p class="status" id="status" role="status">Ready. No file loaded yet.</p>' +
       (window.DOOMOS_SYNTH ?
         '<div class="synth-choice"><label><input type="checkbox" id="synthPoly"' +
-        (window.DOOMOS_WAVES ? '> Sound Generator (4 voices + 17 new waves)' :
+        (window.DOOMOS_WAVES ? '> Sound Generator v9.1 (4 voices + 17 new waves + envelopes + voice stealing)' :
           ' checked> Sound Generator (4 voices)') +
         '</label></div>' : '') +
       '<div class="actions">' +
@@ -306,7 +306,7 @@ if (typeof module === 'object' && module.exports) {
         reset.hidden = false;
         patchBtn.hidden = true;
         say('Done. DOOM OS' + (addPoly ? ' + Sound Generator (4 voices' +
-            (addWaves ? ', 17 new waves, v8)' : ')') : '') +
+            (addWaves ? ', 17 new waves, envelopes, voice stealing, v9.1)' : ')') : '') +
             ' has been patched into firmware ' + result.label + '. '
             + 'Download it and keep the name SP404MKII_APP1.bin.', 'ok');
         state.textContent = 'Complete';

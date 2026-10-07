@@ -163,7 +163,7 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
     <span class="n">01</span>
     <div class="body">
       <h1>SP-404MKII synth patcher</h1>
-      <p class="lede">Tracelistener's experimental fork: DOOM OS 0.6.1 + four-voice Sound Generator + 17 Wave Lab types. Your firmware stays in your browser; nothing is uploaded.</p>
+      <p class="lede">Tracelistener's experimental fork: DOOM OS 0.6.1 + Sound Generator v9.1 with four voices, 17 new waves, envelope/filter presets and voice stealing. Your firmware stays in your browser; nothing is uploaded.</p>
       <dl class="facts">
         <div><dt>DOOM OS base</dt><dd data-doomos="version"></dd></div>
         <div><dt>Base build</dt><dd data-doomos="build"></dd></div>
@@ -178,7 +178,7 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
       <div class="body">
         <p class="t">Compatible with firmware <strong data-doomos="firmware-list"></strong>.</p>
         <div id="doomos-patcher"></div>
-        <p class="t">Our <a class="inline" href="https://github.com/tracelistener/doom-os-etc./blob/main/synth/V8.md">v8 changes and test instructions</a> · <a class="inline" href="https://github.com/tracelistener/doom-os-etc./blob/main/synth/WAVES.md">wave list</a> · <a class="inline" href="https://github.com/tracelistener/doom-os-etc.">source code</a> · <a class="inline" href="https://tracelistener.github.io/sp404mk2-sound-generator/">Wave Lab preview</a></p>
+        <p class="t">Owner reports v9.1 working on hardware; CPU headroom remains unmeasured. Our <a class="inline" href="https://github.com/tracelistener/doom-os-etc./blob/main/synth/V9.md">v9.1 changes and test instructions</a> · <a class="inline" href="https://github.com/tracelistener/doom-os-etc./blob/main/synth/WAVES.md">wave list</a> · <a class="inline" href="https://github.com/tracelistener/doom-os-etc.">source code</a> · <a class="inline" href="https://tracelistener.github.io/sp404mk2-sound-generator/">Wave Lab preview</a></p>
       </div>
     </article>
     <article class="row">
@@ -187,7 +187,7 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
         <h2>Prepare your test update</h2>
         <ol class="steps">
           <li>Back up your samples, projects and settings. Keep the original Roland 5.52 update and your working build.</li>
-          <li>Load the unmodified stock 5.52 <code>SP404MKII_APP1.bin</code> above. Select Sound Generator for four voices and all 17 new waves together.</li>
+          <li>Load the unmodified stock 5.52 <code>SP404MKII_APP1.bin</code> above. Select Sound Generator for v9.1: four voices, all 17 new waves, envelopes/filter presets and voice stealing together.</li>
           <li>Download the result as <code>SP404MKII_APP1.bin</code>. Use it with the unchanged official 5.52 <code>SP404MKII_APP0.bin</code> and your established SD-card update procedure.</li>
           <li>For chord REC, hold the chord while entering REC, then release and finish the normal destination workflow. Return to the known-good update for hangs, stuck notes or audio breakup.</li>
         </ol>
@@ -199,8 +199,8 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
     <p class="note">Based on DOOM OS 0.6.1 by Quintus Oostendorp (Klangfeld Labs), released under the MIT License, which this repository keeps. DOOM OS 0.6.2 and later use a different license and are not included. Not an official DOOM OS release, and not affiliated with Klangfeld Labs or Roland. This page cannot flash your SP automatically.</p>
   </footer>
 </div>
-<script src="synth-data.js?v=waves-v8-12dbeae4"></script>
-<script src="waves-data.js?v=waves-v8-12dbeae4"></script>
-<script src="doomos-patcher.js?v=synth-combined-v8"></script>
+<script src="synth-data.js?v=waves-v9-1-dad6f0d4"></script>
+<script src="waves-data.js?v=waves-v9-1-dad6f0d4"></script>
+<script src="doomos-patcher.js?v=synth-combined-v9-1"></script>
 </body>
 </html>

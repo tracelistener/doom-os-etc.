@@ -1,10 +1,10 @@
 # Wave list and archived V3 DSP-budget notes
 
-**Current patcher: [Wave Lab V8 RAM](V8.md).** The type/name/DUTY table below
+**Current patcher: [Sound Generator v9.1 RAM](V9.md).** The type/name/DUTY table below
 still applies. The remaining V3 build/layout/test instructions are historical;
-they do not describe the currently published v8 overlay. Use `build_v8.py`
+they do not describe the currently published v9.1 overlay. Use `build_v9.py`
 for the current build. Running the legacy V3 command with `--web` intentionally
-replaces the published data with an older image; do not use it for v8.
+replaces the published data with an older image; do not use it for v9.1.
 
 ## Archived V3 candidate (hardware unverified)
 

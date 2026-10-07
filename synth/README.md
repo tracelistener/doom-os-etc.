@@ -7,13 +7,17 @@ releases still describe upstream builds only.
 
 Update: the user reported this preceding DOOM/poly-v4 build working. The
 separate [17-wave extension](WAVES.md) adds types 15–31 to it, with its own
-overlay/hash/test image. The current [V8 RAM build](V8.md) keeps all 17 waves,
-restores raw DUTY and Sync/CZRes grit, and retains v7's fixes. It is emulator-
-tested, not hardware-validated. Archived poly-v4 sources remain unchanged.
+overlay/hash/test image. The current [v9.1 RAM build](V9.md) keeps v8's 17 waves
+and raw-grit sound, adds volume/filter envelopes and voice stealing, and fixes
+REC silence and stale TYPE selection/display. The owner reported its hardware
+test working on 2026-10-07; CPU headroom is still unmeasured. Archived poly-v4
+and v8 sources remain available.
 
 ## What is included
 
-- Four live Sound Generator voices. The fifth held note is dropped, not stolen.
+- Four live Sound Generator voices. V9.1 steals the oldest fading voice, else
+  the oldest held voice, when a fifth note is played; stolen note-offs are ignored.
+- Nine custom timed ENV presets, four with a resonant low-pass/filter envelope.
 - Shared TYPE, LEVEL, DUTY (where the oscillator supports it), BALANCE, TUNE and
   ENV; FREQ transposes the chord while preserving intervals within bounds.
 - Held-pad LED matching, including duplicate pitches, and clone-aware stop/reset.
@@ -38,9 +42,9 @@ stability still need device testing.
    this fork's additions.
 3. Supply the **unmodified stock 5.52 `SP404MKII_APP1.bin`**, not our v4 binary
    or an existing DOOM image.
-4. Select “Sound Generator (4 voices + 17 new waves)” for the combined v8 build.
+4. Select “Sound Generator v9.1” for the combined build.
    This single option is OFF by default. It includes both polyphony and all
-   17 new waves with v8's raw-grit sound and retained fixes. Unselected, it
+   17 new waves with v8's raw-grit sound, envelopes and voice stealing. Unselected, it
    produces the exact original ED5E image instead.
 5. Patch and download. Stock, DOOM and combined SHA-256 checks are performed
    locally; the browser does not upload your firmware.
@@ -71,7 +75,8 @@ Outputs default to ignored `out/doom-poly-v4/`; optional FM output goes to
 and it is copied without alteration. `--web` regenerates `synth-data.js`.
 It contains only the small overlay, not a complete firmware image.
 Do not use `--fm --web` unless you intend to include the additional optional
-overlay in the published data; the current page selects upstream DOOM or combined v8.
+overlay in the published data; the current page selects upstream DOOM or combined v9.1.
+Use [the v9.1 source build](V9.md) to regenerate the current wave overlay.
 
 For tests (PowerShell; use an absolute path):
 

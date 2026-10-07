@@ -43,13 +43,11 @@ class V8Publication(unittest.TestCase):
         self.assertTrue(info['pool_unchanged_from_v4'])
         self.assertEqual(info['symbols'], self.info['symbols'])
 
-    def test_shipped_web_overlay_is_exact_v8(self):
+    def test_archived_v8_overlay_roundtrip(self):
         stock = Path(os.environ['DOOM_STOCK_APP1']).read_bytes()
         _, base = build.build(stock)
-        text = (build.REPO / 'waves-data.js').read_text()
-        match = re.search(r'window\.DOOMOS_WAVES_PATCH = "([A-Za-z0-9+/=]+)";', text)
-        self.assertIsNotNone(match)
-        overlay = base64.b64decode(match[1], validate=True)
+        # The live page now ships v9.1; v8 remains an archived reproducible build.
+        overlay = build.make_overlay(base, self.image, '5.52+waves-v8')
         self.assertEqual(build.apply_container(overlay, base), self.image)
 
     def test_publish_rejects_corrupt_inputs_without_overwriting_data(self):
