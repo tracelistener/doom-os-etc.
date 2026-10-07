@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tracelistener · SP-404MKII synth patcher</title>
-<meta name="description" content="Tracelistener's experimental SP-404MKII firmware patcher: DOOM OS, four-voice polyphony and 17 Wave Lab types. Runs locally in your browser; no firmware uploads.">
+<meta name="description" content="Tracelistener's SP-404MKII Sound Generator v9.1 mod: four voices, 17 added waves and volume/filter-envelope presets. Local browser patching; no firmware uploads.">
 <style>
 
 :root {
@@ -143,6 +143,9 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
 .synth-choice legend { font-size: 14px; font-weight: 600; }
 .synth-choice input { margin-right: 8px; }
 .synth-choice .small { margin: 10px 0 0; color: var(--panel-dim); line-height: 1.6; }
+.env-guide { margin-top: 18px; font-size: 16px; line-height: 1.6; }
+.env-guide summary { cursor: pointer; font-weight: 600; }
+.env-guide ul { padding-left: 22px; color: var(--text); }
 
 @media (max-width: 720px) {
   .wrap { padding: 0 20px 44px; }
@@ -163,12 +166,12 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
     <span class="n">01</span>
     <div class="body">
       <h1>SP-404MKII synth patcher</h1>
-      <p class="lede">Tracelistener's experimental fork: DOOM OS 0.6.1 + Sound Generator v9.1 with four voices, 17 new waves, envelope/filter presets and voice stealing. Your firmware stays in your browser; nothing is uploaded.</p>
+      <p class="lede">Tracelistener's Sound Generator v9.1 mod: four live voices, 17 added waves and volume/filter-envelope presets. Your firmware stays in your browser; nothing is uploaded.</p>
       <dl class="facts">
-        <div><dt>DOOM OS base</dt><dd data-doomos="version"></dd></div>
-        <div><dt>Base build</dt><dd data-doomos="build"></dd></div>
-        <div><dt>Firmware</dt><dd data-doomos="firmware"></dd></div>
-        <div><dt>Base released</dt><dd data-doomos="released"></dd></div>
+        <div><dt>Synth build</dt><dd>v9.1</dd></div>
+        <div><dt>Live voices</dt><dd>4</dd></div>
+        <div><dt>Added waves</dt><dd>17</dd></div>
+        <div><dt>ENV presets</dt><dd>9 + OFF</dd></div>
       </dl>
     </div>
   </section>
@@ -176,9 +179,22 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
     <article class="row">
       <span class="n">1</span>
       <div class="body">
-        <p class="t">Compatible with firmware <strong data-doomos="firmware-list"></strong>.</p>
+        <p class="t">Compatible with stock firmware <strong data-doomos="firmware-list"></strong>. Select Sound Generator to include the mod; unchecked generates the base build without these synth additions.</p>
         <div id="doomos-patcher"></div>
         <p class="t">Owner reports v9.1 working on hardware; CPU headroom remains unmeasured. Our <a class="inline" href="https://github.com/tracelistener/doom-os-etc./blob/main/synth/V9.md">v9.1 changes and test instructions</a> · <a class="inline" href="https://github.com/tracelistener/doom-os-etc./blob/main/synth/WAVES.md">wave list</a> · <a class="inline" href="https://github.com/tracelistener/doom-os-etc.">source code</a> · <a class="inline" href="https://tracelistener.github.io/sp404mk2-sound-generator/">Wave Lab preview</a></p>
+        <details class="env-guide">
+          <summary>Envelope preset guide (ENV)</summary>
+          <p class="t">In Sound Generator, choose ENV, then play a new note to hear the selected preset. Each voice takes its envelope when the note starts. Presets work on stock and added waves, four-voice playback and held-chord REC.</p>
+          <ul>
+            <li><strong>OFF:</strong> stock behavior, no added envelope.</li>
+            <li><strong>Pluck / Perc:</strong> fast attack and decay to silence; Perc has the longer decay.</li>
+            <li><strong>Keys:</strong> fast attack, quieter held level and a release tail.</li>
+            <li><strong>Pad / Swell:</strong> soft fade-in and long release; Swell is slower.</li>
+            <li><strong>Bass / Acid:</strong> volume plus a closing resonant low-pass filter; Acid has stronger resonance/drive and a shorter release.</li>
+            <li><strong>Sweep / FPad:</strong> volume plus slow filter movement; Sweep opens slowly, FPad has a softer volume attack and long release.</li>
+          </ul>
+          <p class="t">ENV selects fixed presets, not separate ADSR knobs. Release tails continue after note-off; all-stop still cuts them with the stock fade. These are custom envelopes/filter, not a ZEN-Core port.</p>
+        </details>
       </div>
     </article>
     <article class="row">
@@ -187,7 +203,7 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
         <h2>Prepare your test update</h2>
         <ol class="steps">
           <li>Back up your samples, projects and settings. Keep the original Roland 5.52 update and your working build.</li>
-          <li>Load the unmodified stock 5.52 <code>SP404MKII_APP1.bin</code> above. Select Sound Generator for v9.1: four voices, all 17 new waves, envelopes/filter presets and voice stealing together.</li>
+          <li>Load the unmodified stock 5.52 <code>SP404MKII_APP1.bin</code> above. Select Sound Generator for v9.1: four voices, all 17 new waves and envelopes/filter presets together.</li>
           <li>Download the result as <code>SP404MKII_APP1.bin</code>. Use it with the unchanged official 5.52 <code>SP404MKII_APP0.bin</code> and your established SD-card update procedure.</li>
           <li>For chord REC, hold the chord while entering REC, then release and finish the normal destination workflow. Return to the known-good update for hangs, stuck notes or audio breakup.</li>
         </ol>
@@ -195,12 +211,12 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
     </article>
   </main>
   <footer class="site">
-    <p>Tracelistener's experimental SP-404MKII fork.</p>
-    <p class="note">Based on DOOM OS 0.6.1 by Quintus Oostendorp (Klangfeld Labs), released under the MIT License, which this repository keeps. DOOM OS 0.6.2 and later use a different license and are not included. Not an official DOOM OS release, and not affiliated with Klangfeld Labs or Roland. This page cannot flash your SP automatically.</p>
+    <p>Tracelistener's SP-404MKII Sound Generator mod.</p>
+    <p class="note">Unofficial; not affiliated with Roland or Klangfeld Labs. Base attribution: DOOM OS 0.6.1 ED5E by Quintus Oostendorp / Klangfeld Labs, MIT License retained in the repository. This page cannot flash your SP automatically.</p>
   </footer>
 </div>
 <script src="synth-data.js?v=waves-v9-1-dad6f0d4"></script>
 <script src="waves-data.js?v=waves-v9-1-dad6f0d4"></script>
-<script src="doomos-patcher.js?v=synth-combined-v9-1-label"></script>
+<script src="doomos-patcher.js?v=synth-v9-1-env-guide"></script>
 </body>
 </html>

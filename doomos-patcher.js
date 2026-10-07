@@ -305,8 +305,8 @@ if (typeof module === 'object' && module.exports) {
         download.hidden = false;
         reset.hidden = false;
         patchBtn.hidden = true;
-        say('Done. DOOM OS' + (addPoly ? ' + Sound Generator (4 voices' +
-            (addWaves ? ', 17 new waves, envelopes, voice stealing, v9.1)' : ')') : '') +
+        say('Done. ' + (addPoly ? 'Sound Generator (4 voices' +
+            (addWaves ? ', 17 new waves, envelopes, v9.1)' : ')') : 'Base build without synth additions') +
             ' has been patched into firmware ' + result.label + '. '
             + 'Download it and keep the name SP404MKII_APP1.bin.', 'ok');
         state.textContent = 'Complete';
