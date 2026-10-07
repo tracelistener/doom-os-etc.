@@ -2,8 +2,8 @@
 
 **[Open the synth patcher](https://tracelistener.github.io/doom-os-etc./)**
 
-Sound Generator **v9.5** adds four live voices, 17 new waveforms, nine
-volume/filter-envelope presets and scale pads to the SP-404MKII. Firmware processing happens
+Sound Generator **v9.6** adds four live voices, 17 new waveforms, nine
+volume/filter-envelope presets and 34 scale choices to the SP-404MKII. Firmware processing happens
 locally in your browser; nothing is uploaded. Select the single Sound Generator
 option to include the mod. It is OFF by default; unchecked generates the base
 build without these synth additions.
@@ -14,7 +14,7 @@ build without these synth additions.
 - 17 added waves: FM1:1, FM1:2, FM1:7, CZSaw, CZSqr, CZRes, Sync, Fold,
   Drive, LPSaw, LPSqr, Organ, Vowel, Table, Logic, Metal and Grit.
 - Nine timed ENV presets; four also have a resonant low-pass/filter envelope.
-- Scale pads: with a SCALE set, the 16 pads play only scale notes, so one
+- 34 scales (27 added in v9.6): with a SCALE set, the 16 pads play only scale notes, so one
   bank spans two to three octaves.
 - MIDI IN on all four voices. When all four are busy, a new note takes one
   after a 2.8 ms fade-out, reducing chord-swap clicks in emulator tests.
@@ -23,11 +23,14 @@ build without these synth additions.
   readout and stale TYPE selection/display.
 - Loudness/DC matching and quieter Pulse/Noise, while retaining raw DUTY
   jitter and Sync/CZRes aliasing grit. Stock waves, including Saw2, remain.
+- v9.6 fixes out-of-range pad releases after large OCT/ROOT/SCALE changes
+  and FREQ bounds for wide MIDI chords. Fitting chords keep their intervals;
+  chords wider than 84 semitones stay unchanged when FREQ is adjusted.
 
 This does not turn normal sample pads or patterns into live synth pads.
 No ZEN-Core/MC-101 engine is included.
 
-## Sound Generator envelopes (v9.5)
+## Sound Generator envelopes (v9.6)
 
 In Sound Generator, select **ENV** and choose a preset. Play a new note after
 changing ENV: each voice takes its preset when the note starts. These replace
@@ -52,9 +55,9 @@ other five non-OFF presets shape volume only. The filter tracks note pitch.
 Release tails continue after note-off, while all-stop still uses the short
 stock fade. ENV is a preset selector, not separate ADSR/filter parameter knobs.
 REC renders the held chord with its selected envelope, not a live performance.
-See [the complete v9.5 notes](synth/V9.md).
+See [the envelope and previous v9.x notes](synth/V9.md).
 
-## Scale pads (v9.4)
+## Scale pads (v9.6)
 
 Set **SCALE** to anything other than Chrom and the 16 pads play only notes of
 that scale, one scale step per pad, from the bottom row (lowest) to the top
@@ -64,6 +67,12 @@ three octaves with a pentatonic one. The pad lights keep their meaning (root,
 below and above the root). Chrom, NOTE, OCT and the other screens work as
 before. MIDI IN now plays all four voices, and a held MIDI note lights the pad
 with the same pitch.
+
+The original scales retain their IDs. New choices include the remaining modes,
+blues, bebop, harmonic/melodic minor, whole tone, diminished, several pentatonics
+and more. [Full scale list and v9.6 fixes](synth/SCALES.md). Added choices act as
+Chrom outside Sound Generator. Extreme OCT settings can put pads outside the
+existing playable pitch range; no new save/load persistence has been established.
 
 ## How to install
 
@@ -76,7 +85,7 @@ You can also download this repository as a ZIP file (under the Code button), unz
 ### Manual installation
 
 1. Download the 5.52 system update from [Roland's support page](https://www.roland.com/global/support/by_product/sp-404mk2/updates_drivers/) and unzip it.
-2. Open [our patcher](https://tracelistener.github.io/doom-os-etc./) and load the stock `SP404MKII_APP1.bin`. Select Sound Generator for v9.5: four voices, 17 new waves, envelopes and scale pads. The patcher only accepts official 5.52 and checks the result against [the fork's checksums](synth/checksums.txt).
+2. Open [our patcher](https://tracelistener.github.io/doom-os-etc./) and load the stock `SP404MKII_APP1.bin`. Select Sound Generator for v9.6: four voices, 17 new waves, envelopes, 34 scales and FREQ/note-off fixes. The patcher only accepts official 5.52 and checks the result against [the fork's checksums](synth/checksums.txt).
 3. Download the patched `SP404MKII_APP1.bin` and use it with the unchanged official 5.52 `SP404MKII_APP0.bin` for your test update. Back up first and keep your known-good update for rollback.
 4. Insert the card, hold **SHIFT** while you turn the SP on, and press the **VALUE** knob when the update menu appears.
 5. When the update is done, turn the SP off and on again.
@@ -85,15 +94,15 @@ To go back to the original firmware, just run the updater with the original Rola
 
 ## Status
 
-**v9.5** (2026-10-07) passes all 32 emulator checks and its source rebuilds
-byte-for-byte to the published image; hardware confirmation is pending.
-It addresses a click the v9.4 hardware test found when swapping a note
-of a full chord. The previous build, v9.1, was reported working on hardware on
-2026-10-07 (test coverage unspecified). CPU headroom remains unmeasured. All
-135 publication/regression checks and the browser patcher test pass. This
-remains experimental; four loud voices can clip.
+**v9.6** (2026-10-07) passes all 59 emulator checks and rebuilds byte-for-byte
+to the published image. These cover the 32 preceding v9.5 checks, 13 scale
+checks (26,112 pad cases), and 14 new voice-fix checks. Hardware testing is
+pending; CPU headroom remains unmeasured. The previous v9.1 build was reported
+working on hardware (coverage unspecified). This remains experimental;
+four loud voices can clip. Browser output is checked against the exact tested
+APP1 hash; APP0 stays unchanged stock.
 
-See [the v9.5 build and test notes](synth/V9.md),
+See [the v9.6 changes, build and test notes](synth/SCALES.md),
 [the wave list](synth/WAVES.md) and [integration notes](synth/README.md).
 Report synth bugs with the build, waveform, ENV preset, number of held notes
 and steps to reproduce. Preserve your backups and known-good firmware pair.

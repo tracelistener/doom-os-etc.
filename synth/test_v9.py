@@ -37,14 +37,11 @@ class V9Publication(unittest.TestCase):
         self.assertTrue(self.info['pool_unchanged_from_v4'])
         self.assertEqual(self.info['waves_c_sha256'], build_v8.SOURCE_LF_HASHES['waves.c'])
 
-    def test_shipped_overlay_roundtrip_and_metadata(self):
-        text = (build.REPO/'waves-data.js').read_text()
-        match = re.search(r'window\.DOOMOS_WAVES_PATCH = "([A-Za-z0-9+/=]+)";', text)
-        self.assertIsNotNone(match)
-        container = base64.b64decode(match[1], validate=True)
+    def test_archived_overlay_roundtrip(self):
+        # v9.5 remains reproducible, but the shipped overlay is now v9.6.
+        # test_v9_6.py checks the actual current publication.
+        container = build.make_overlay(self.base, self.image, '5.52+waves-v9.5')
         self.assertEqual(build.apply_container(container, self.base), self.image)
-        metadata = re.search(r'window\.DOOMOS_WAVES = (\{.*\});', text)
-        self.assertEqual(json.loads(metadata[1]), self.info)
 
     def test_rejects_corrupt_inputs_without_overwriting_data(self):
         destination = build.REPO/'waves-data.js'

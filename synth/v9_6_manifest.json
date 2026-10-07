@@ -1,0 +1,1129 @@
+{
+  "base_sha256": "1b295c877f61c445f761a8a607ddb4f34327ba0875de002ebedb0a6d9cf0e18e",
+  "code_base": 2214068224,
+  "code_file": 2835472,
+  "code_size": 133568,
+  "duty": "raw (stock integer DUTY, no smoothing)",
+  "env_c_sha256": "3bbdd706829c73912dfc30a5c4c7eea24c5bab3b0e2b17e8249814b62a9ef619",
+  "env_presets": {
+    "Acid": {
+      "filter": [
+        0.4,
+        5.6,
+        0.002,
+        0.3,
+        0.0,
+        0.05,
+        0.22,
+        1.5,
+        0.85
+      ],
+      "volume": [
+        0.002,
+        0.2,
+        0.9,
+        0.05
+      ]
+    },
+    "Bass": {
+      "filter": [
+        0.8,
+        4.2,
+        0.002,
+        0.35,
+        0.0,
+        0.12,
+        1.1,
+        1.0,
+        1.15
+      ],
+      "volume": [
+        0.002,
+        0.8,
+        0.65,
+        0.12
+      ]
+    },
+    "FPad": {
+      "filter": [
+        0.3,
+        3.6,
+        1.4,
+        2.5,
+        0.45,
+        1.6,
+        0.9,
+        1.0,
+        1.15
+      ],
+      "volume": [
+        0.45,
+        0.8,
+        1.0,
+        1.6
+      ]
+    },
+    "Keys": {
+      "filter": null,
+      "volume": [
+        0.005,
+        1.6,
+        0.45,
+        0.4
+      ]
+    },
+    "OFF": {
+      "filter": null,
+      "volume": null
+    },
+    "Pad": {
+      "filter": null,
+      "volume": [
+        0.35,
+        0.6,
+        1.0,
+        1.4
+      ]
+    },
+    "Perc": {
+      "filter": null,
+      "volume": [
+        0.002,
+        1.2,
+        0.0,
+        0.6
+      ]
+    },
+    "Pluck": {
+      "filter": null,
+      "volume": [
+        0.002,
+        0.3,
+        0.0,
+        0.2
+      ]
+    },
+    "Sweep": {
+      "filter": [
+        -0.8,
+        6.5,
+        2.8,
+        1.5,
+        1.0,
+        0.8,
+        0.55,
+        1.0,
+        1.1
+      ],
+      "volume": [
+        0.01,
+        0.5,
+        1.0,
+        0.8
+      ]
+    },
+    "Swell": {
+      "filter": null,
+      "volume": [
+        1.6,
+        0.6,
+        1.0,
+        2.2
+      ]
+    }
+  },
+  "env_presets_sha256": "7cecb79550c7a69b182768401c9ef2a8c10b114c2b9147d5dfb8f790ea86b2d9",
+  "execution": "sdram-gap",
+  "experimental": true,
+  "extra_fixes": [
+    [
+      "0x80020478",
+      "cmp r1, #0xe",
+      "cmp r1, #0x1f"
+    ],
+    [
+      "0x800204aa",
+      "cmp r1, #4",
+      "cmp r1, #0x15"
+    ],
+    [
+      "0x800d0740",
+      "cmp r2, #9",
+      "cmp r2, #0x1a"
+    ],
+    [
+      "0x8015c14c",
+      "cmp r1, #9",
+      "cmp r1, #0x1a"
+    ],
+    [
+      "0x8013287e",
+      "cmp r2, #9",
+      "cmp r2, #0x1a"
+    ],
+    [
+      "0x8015c5fc",
+      "cmp r1, #0xe",
+      "cmp r1, #0x1f"
+    ],
+    [
+      "0x8015c602",
+      "movw r3, #0x7fdb",
+      "mvn r3, #0x24"
+    ],
+    [
+      "0x8015c614",
+      "cmp r1, #0xe",
+      "cmp r1, #0x1f"
+    ],
+    [
+      "0x8015c620",
+      "movw r2, #0x7fdb",
+      "mvn r2, #0x24"
+    ],
+    [
+      "0x8015ca9c",
+      "cmp r1, #0xe",
+      "cmp r1, #0x1f"
+    ],
+    [
+      "0x8015caa2",
+      "movw r3, #0x7fdb",
+      "mvn r3, #0x24"
+    ],
+    [
+      "0x8002b958",
+      "cmp r2, #0xe",
+      "cmp r2, #0x1f"
+    ],
+    [
+      "0x8002b964",
+      "movw r6, #0x7fdb",
+      "mvn r6, #0x24"
+    ],
+    [
+      "0x8002b970",
+      "cmp r2, #0xe",
+      "cmp r2, #0x1f"
+    ],
+    [
+      "0x8002b978",
+      "movw r2, #0x7fdb",
+      "mvn r2, #0x24"
+    ]
+  ],
+  "fix_hooks": [
+    [
+      2214072280,
+      4
+    ],
+    [
+      2214072538,
+      12
+    ]
+  ],
+  "freq_bounds_fix": true,
+  "hardware_validation": {
+    "coverage": "none",
+    "cpu_headroom": "unmeasured",
+    "date": null,
+    "detail": "v9.6-fixes candidate has not been tested on hardware",
+    "source": "none yet"
+  },
+  "hooks": [
+    [
+      2148738716,
+      2
+    ],
+    [
+      2148738724,
+      2
+    ],
+    [
+      2148738758,
+      2
+    ],
+    [
+      2147590086,
+      2
+    ],
+    [
+      2148736204,
+      2
+    ],
+    [
+      2148736414,
+      2
+    ],
+    [
+      2148735914,
+      2
+    ],
+    [
+      2148739638,
+      2
+    ],
+    [
+      2147514112,
+      12
+    ],
+    [
+      2148736128,
+      12
+    ],
+    [
+      2148735868,
+      12
+    ],
+    [
+      2147615864,
+      2
+    ],
+    [
+      2147615914,
+      2
+    ],
+    [
+      2148337472,
+      2
+    ],
+    [
+      2148909388,
+      2
+    ],
+    [
+      2148739198,
+      2
+    ],
+    [
+      2148910588,
+      2
+    ],
+    [
+      2148910594,
+      4
+    ],
+    [
+      2148910612,
+      2
+    ],
+    [
+      2148910624,
+      4
+    ],
+    [
+      2148911772,
+      2
+    ],
+    [
+      2148911778,
+      4
+    ],
+    [
+      2147662168,
+      2
+    ],
+    [
+      2147662180,
+      4
+    ],
+    [
+      2147662192,
+      2
+    ],
+    [
+      2147662200,
+      4
+    ],
+    [
+      2203299840,
+      384
+    ],
+    [
+      2203300928,
+      192
+    ],
+    [
+      2147515984,
+      20
+    ],
+    [
+      2148736500,
+      12
+    ],
+    [
+      2147590048,
+      4
+    ],
+    [
+      2147590080,
+      4
+    ],
+    [
+      2147615852,
+      4
+    ],
+    [
+      2147615860,
+      4
+    ],
+    [
+      2147615908,
+      4
+    ],
+    [
+      2148735908,
+      4
+    ],
+    [
+      2148736200,
+      4
+    ],
+    [
+      2148736408,
+      4
+    ],
+    [
+      2148738720,
+      4
+    ],
+    [
+      2148738748,
+      4
+    ],
+    [
+      2148910584,
+      4
+    ],
+    [
+      2147662156,
+      4
+    ],
+    [
+      2203301760,
+      224
+    ],
+    [
+      2203302400,
+      256
+    ],
+    [
+      2147615860,
+      12
+    ],
+    [
+      2148736200,
+      10
+    ],
+    [
+      2203300416,
+      448
+    ],
+    [
+      2147683464,
+      12
+    ],
+    [
+      2147684264,
+      12
+    ],
+    [
+      2147683992,
+      12
+    ],
+    [
+      2148909168,
+      88
+    ],
+    [
+      2148910288,
+      32
+    ],
+    [
+      2147853972,
+      16
+    ],
+    [
+      2203301120,
+      80
+    ]
+  ],
+  "module_sha256": "0f5c7f2b7ef08e875bd57b96189466757c38101ad8e57fd91e9829ce4c5ebae6",
+  "noise_freq_label_fix": true,
+  "note_off": "stolen notes ignored; exact note+source; else one non-releasing voice of that source",
+  "original_build_source_sha256": {
+    "tables_sha256": "8d59eb235dc4dcb69906f91f17547ebfe9bc2c2f71e9002162f3995a9bdfb2b9",
+    "waves_c_sha256": "fa93843fbb5fa8128e8c181634d39a0025f01ba62d9ad388201fb1995a284d4f"
+  },
+  "original_module_sha256": "f520c951afa875aec28064609e147b2817deb6493cb1881ecb363690cbb0ccdb",
+  "pad_noteoff_range_fix": true,
+  "parent_sha256": "d0919e400c4232bc8d9a5fa0fc38d8af154e3e248c8e8697beadd732fe12ec9a",
+  "polyblep": [],
+  "pool_base": 2203310124,
+  "pool_unchanged_from_v4": true,
+  "published": true,
+  "quiet_gain_db": -6.02,
+  "quiet_stock_types": {
+    "11": "Pulse",
+    "13": "Noise1",
+    "14": "Noise2"
+  },
+  "release_fix": true,
+  "revision": "v9.6-fixes",
+  "scale_code_base": 2214203392,
+  "scale_code_file": 2969280,
+  "scale_code_size": 2028,
+  "scale_hooks": [
+    [
+      2147683464,
+      12
+    ],
+    [
+      2147684264,
+      12
+    ],
+    [
+      2147683992,
+      12
+    ],
+    [
+      2148293796,
+      12
+    ],
+    [
+      2148350460,
+      12
+    ],
+    [
+      2148909170,
+      10
+    ],
+    [
+      2148909184,
+      10
+    ],
+    [
+      2148910290,
+      10
+    ]
+  ],
+  "scale_module_sha256": "3c672952dc3b23c7a418b8344e790cfcfa3d9121847b148340ad54c9205457ec",
+  "scale_symbols": {
+    "fixed_freq_event": 2214204457,
+    "scale_in": 2214204265,
+    "scale_name": 2214204385,
+    "scale_note": 2214203649,
+    "scale_range": 2214204359,
+    "scale_rel": 2214204283
+  },
+  "scales": [
+    {
+      "label": "Chrom",
+      "name": "Chromatic",
+      "notes": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ]
+    },
+    {
+      "label": "Major",
+      "name": "Major (Ionian)",
+      "notes": [
+        0,
+        2,
+        4,
+        5,
+        7,
+        9,
+        11
+      ]
+    },
+    {
+      "label": "Minor",
+      "name": "Minor (Aeolian)",
+      "notes": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        8,
+        10
+      ]
+    },
+    {
+      "label": "Dorian",
+      "name": "Dorian",
+      "notes": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        9,
+        10
+      ]
+    },
+    {
+      "label": "Phryg",
+      "name": "Phrygian",
+      "notes": [
+        0,
+        1,
+        3,
+        5,
+        7,
+        8,
+        10
+      ]
+    },
+    {
+      "label": "MajPenta",
+      "name": "Major Pentatonic",
+      "notes": [
+        0,
+        2,
+        4,
+        7,
+        9
+      ]
+    },
+    {
+      "label": "MinPenta",
+      "name": "Minor Pentatonic",
+      "notes": [
+        0,
+        3,
+        5,
+        7,
+        10
+      ]
+    },
+    {
+      "label": "Lydian",
+      "name": "Lydian",
+      "notes": [
+        0,
+        2,
+        4,
+        6,
+        7,
+        9,
+        11
+      ]
+    },
+    {
+      "label": "Mixolyd",
+      "name": "Mixolydian",
+      "notes": [
+        0,
+        2,
+        4,
+        5,
+        7,
+        9,
+        10
+      ]
+    },
+    {
+      "label": "Locrian",
+      "name": "Locrian",
+      "notes": [
+        0,
+        1,
+        3,
+        5,
+        6,
+        8,
+        10
+      ]
+    },
+    {
+      "label": "MinBlues",
+      "name": "Minor Blues",
+      "notes": [
+        0,
+        3,
+        5,
+        6,
+        7,
+        10
+      ]
+    },
+    {
+      "label": "BebopMin",
+      "name": "Bebop Minor (Bebop Dorian)",
+      "notes": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        7,
+        9,
+        10
+      ]
+    },
+    {
+      "label": "HarmMin",
+      "name": "Harmonic Minor",
+      "notes": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        8,
+        11
+      ]
+    },
+    {
+      "label": "MelodMin",
+      "name": "Melodic Minor",
+      "notes": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        9,
+        11
+      ]
+    },
+    {
+      "label": "MajBlues",
+      "name": "Major Blues",
+      "notes": [
+        0,
+        2,
+        3,
+        4,
+        7,
+        9
+      ]
+    },
+    {
+      "label": "BebopMaj",
+      "name": "Bebop Major",
+      "notes": [
+        0,
+        2,
+        4,
+        5,
+        7,
+        8,
+        9,
+        11
+      ]
+    },
+    {
+      "label": "Altered",
+      "name": "Altered",
+      "notes": [
+        0,
+        1,
+        3,
+        4,
+        6,
+        8,
+        10
+      ]
+    },
+    {
+      "label": "WholeTon",
+      "name": "Whole Tone",
+      "notes": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10
+      ]
+    },
+    {
+      "label": "Dim W-H",
+      "name": "Diminished Whole-Half",
+      "notes": [
+        0,
+        2,
+        3,
+        5,
+        6,
+        8,
+        9,
+        11
+      ]
+    },
+    {
+      "label": "Dim H-W",
+      "name": "Diminished Half-Whole",
+      "notes": [
+        0,
+        1,
+        3,
+        4,
+        6,
+        7,
+        9,
+        10
+      ]
+    },
+    {
+      "label": "GypsyMin",
+      "name": "Gypsy Minor (Hungarian Minor)",
+      "notes": [
+        0,
+        2,
+        3,
+        6,
+        7,
+        8,
+        11
+      ]
+    },
+    {
+      "label": "RomanMin",
+      "name": "Romanian Minor (Ukrainian Dorian)",
+      "notes": [
+        0,
+        2,
+        3,
+        6,
+        7,
+        9,
+        10
+      ]
+    },
+    {
+      "label": "Spanish8",
+      "name": "Spanish 8 Notes",
+      "notes": [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        8,
+        10
+      ]
+    },
+    {
+      "label": "Bhairav",
+      "name": "Bhairav Thaat (Mayamalavagowla)",
+      "notes": [
+        0,
+        1,
+        4,
+        5,
+        7,
+        8,
+        11
+      ]
+    },
+    {
+      "label": "Marva",
+      "name": "Marva Thaat (Gamanasrama)",
+      "notes": [
+        0,
+        1,
+        4,
+        6,
+        7,
+        9,
+        11
+      ]
+    },
+    {
+      "label": "Purvi",
+      "name": "Purvi Thaat (Kamavardani)",
+      "notes": [
+        0,
+        1,
+        4,
+        6,
+        7,
+        8,
+        11
+      ]
+    },
+    {
+      "label": "Todi",
+      "name": "Todi Thaat (Shubhapantuvarali)",
+      "notes": [
+        0,
+        1,
+        3,
+        6,
+        7,
+        8,
+        11
+      ]
+    },
+    {
+      "label": "Arabic",
+      "name": "Arabic",
+      "notes": [
+        0,
+        2,
+        4,
+        5,
+        6,
+        8,
+        10
+      ]
+    },
+    {
+      "label": "Egyptian",
+      "name": "Egyptian",
+      "notes": [
+        0,
+        2,
+        5,
+        7,
+        10
+      ]
+    },
+    {
+      "label": "Chinese",
+      "name": "Chinese",
+      "notes": [
+        0,
+        4,
+        6,
+        7,
+        11
+      ]
+    },
+    {
+      "label": "Pelog",
+      "name": "Pelog",
+      "notes": [
+        0,
+        1,
+        3,
+        7,
+        8
+      ]
+    },
+    {
+      "label": "Hirajosh",
+      "name": "Hirajoshi",
+      "notes": [
+        0,
+        2,
+        3,
+        7,
+        8
+      ]
+    },
+    {
+      "label": "Miyakobu",
+      "name": "Miyakobushi",
+      "notes": [
+        0,
+        1,
+        5,
+        7,
+        8
+      ]
+    },
+    {
+      "label": "Ryukyu",
+      "name": "Ryukyu",
+      "notes": [
+        0,
+        4,
+        5,
+        7,
+        11
+      ]
+    }
+  ],
+  "scales_c_sha256": "f4dfc607e38e5d85cf7b5362a74407d3cefa811254781603e65327f098ecbffa",
+  "scales_json_sha256": "2c7f6fba266bceccaa2a01c70b9e0c5d2e2a895e5e4d8a0c70cbe6a13deb2d55",
+  "sdram_gap": [
+    "0x83f7a424",
+    "0x83ff0000"
+  ],
+  "sha256": "1b2d50e0cfe20b11bad9cdef6945ec24a14a60e772e56a02dd5478331e275cc9",
+  "size": 2971568,
+  "source_line_endings": "Public waveform sources normalized LF, compiled bytes unchanged",
+  "source_sha256": "5ef3642a238d157f0176547dc22d11d46f445072e3aa0ae47879ac304e42cae3",
+  "status": "hardware-unverified",
+  "stealing": "oldest fading voice, else oldest held; 2.8 ms fade-out then fresh start; 30 ms no-audio timeout uses in-place declick; stolen note-offs ignored",
+  "symbols": {
+    "display_slot": 2214201688,
+    "display_voice": 2214073123,
+    "env_age": 2214201692,
+    "env_fast": 2214201680,
+    "env_name": 2214071089,
+    "env_quick": 2214201344,
+    "env_restart": 2214201672,
+    "env_slot": 2214201352,
+    "env_stage": 2214069377,
+    "export_mix": 2214072303,
+    "freq_event": 2214072539,
+    "freq_get": 2214072483,
+    "kb_in_scale": 2214073949,
+    "kb_pad_note": 2214073425,
+    "kb_pad_rel": 2214074069,
+    "midi_event": 2214073165,
+    "note_event": 2214071173,
+    "stolen_valid": 2214201776,
+    "wave_core": 2214074589,
+    "wave_eval": 2214069249,
+    "wave_name": 2214069305,
+    "wave_output": 2214078509
+  },
+  "tables_sha256": "f76cfd8610416574333499472bad6e9e51a492bd446396a1ba2c5d45c4db75b6",
+  "tests": "59 Unicorn checks pass: 32 v9.5 behavioral, 13 scale and 14 voice-fix checks; byte-exact rebuild confirmed; hardware untested",
+  "types": {
+    "15": "FM1:1",
+    "16": "FM1:2",
+    "17": "FM1:7",
+    "18": "CZSaw",
+    "19": "CZSqr",
+    "20": "CZRes",
+    "21": "Sync",
+    "22": "Fold",
+    "23": "Drive",
+    "24": "LPSaw",
+    "25": "LPSqr",
+    "26": "Organ",
+    "27": "Vowel",
+    "28": "Table",
+    "29": "Logic",
+    "30": "Metal",
+    "31": "Grit"
+  },
+  "v9_hooks": [
+    [
+      2203299840,
+      384
+    ],
+    [
+      2203300928,
+      192
+    ],
+    [
+      2147515984,
+      20
+    ],
+    [
+      2148736500,
+      12
+    ],
+    [
+      2147590048,
+      4
+    ],
+    [
+      2147590080,
+      4
+    ],
+    [
+      2147615852,
+      4
+    ],
+    [
+      2147615860,
+      4
+    ],
+    [
+      2147615908,
+      4
+    ],
+    [
+      2148735908,
+      4
+    ],
+    [
+      2148736200,
+      4
+    ],
+    [
+      2148736408,
+      4
+    ],
+    [
+      2148738720,
+      4
+    ],
+    [
+      2148738748,
+      4
+    ],
+    [
+      2148910584,
+      4
+    ],
+    [
+      2147662156,
+      4
+    ],
+    [
+      2203301760,
+      224
+    ],
+    [
+      2203302400,
+      256
+    ],
+    [
+      2147615860,
+      12
+    ],
+    [
+      2148736200,
+      10
+    ],
+    [
+      2203300416,
+      448
+    ],
+    [
+      2147683464,
+      12
+    ],
+    [
+      2147684264,
+      12
+    ],
+    [
+      2147683992,
+      12
+    ],
+    [
+      2148909168,
+      88
+    ],
+    [
+      2148910288,
+      32
+    ],
+    [
+      2147853972,
+      16
+    ],
+    [
+      2203301120,
+      80
+    ]
+  ],
+  "voice_fixes_c_sha256": "3ae2bb25d63dff92113823ca2aca37574771ef500ae98a2b959cd3d5aa229a3c",
+  "wave_level_sha256": "1815a05a2d8013785db22047dd838ab4c082d1f4e573fec6418d63b4e3cf8bd5",
+  "waves_c_sha256": "1e17121b5c0036c55603533f30a97d9391ac63e890e5e92c91af67b04eba8b93",
+  "wide_chord_policy": "FREQ does not transpose held chords wider than 84 semitones"
+}

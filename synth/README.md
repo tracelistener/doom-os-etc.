@@ -14,6 +14,11 @@ displays. The owner reported v9.1 working on hardware on 2026-10-07; the v9.5
 hardware confirmation is pending and CPU headroom is still unmeasured. Archived
 poly-v4 and v8 sources remain available.
 
+Current publication: [v9.6](SCALES.md) retains the v9.5 waves/envelopes/stealing,
+adds 27 scales (34 total), and fixes FREQ bounds and out-of-range pad note-off.
+The web patcher now emits v9.6, with 59 emulator checks passing; hardware
+testing and real-time CPU headroom remain pending. The v9.5 builder is archived.
+
 ## What is included
 
 - Four live Sound Generator voices. V9 steals the oldest fading voice, else
@@ -47,7 +52,7 @@ stability still need device testing.
    this fork's additions.
 3. Supply the **unmodified stock 5.52 `SP404MKII_APP1.bin`**, not our v4 binary
    or an existing DOOM image.
-4. Select “Sound Generator v9.5” for the combined build.
+4. Select “Sound Generator v9.6” for the combined build.
    This single option is OFF by default. It includes both polyphony and all
    17 new waves with v8's raw-grit sound, envelopes and voice stealing. Unselected, it
    produces the exact original ED5E image instead.
@@ -81,7 +86,8 @@ and it is copied without alteration. `--web` regenerates `synth-data.js`.
 It contains only the small overlay, not a complete firmware image.
 Do not use `--fm --web` unless you intend to include the additional optional
 overlay in the published data; the current page selects upstream DOOM or combined v9.5.
-Use [the v9.5 source build](V9.md) to regenerate the current wave overlay.
+Use [the v9.6 source and publication steps](SCALES.md) for the current overlay;
+the v9.5 source build remains available for reproduction/rollback.
 
 For tests (PowerShell; use an absolute path):
 

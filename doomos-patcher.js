@@ -201,7 +201,7 @@ if (typeof module === 'object' && module.exports) {
       '<p class="status" id="status" role="status">Ready. No file loaded yet.</p>' +
       (window.DOOMOS_SYNTH ?
         '<div class="synth-choice"><label><input type="checkbox" id="synthPoly"' +
-        (window.DOOMOS_WAVES ? '> Sound Generator v9.5 (4 voices + 17 new waves + envelopes)' :
+        (window.DOOMOS_WAVES ? '> Sound Generator v9.6 (4 voices + 17 new waves + envelopes + 34 scales)' :
           ' checked> Sound Generator (4 voices)') +
         '</label></div>' : '') +
       '<div class="actions">' +
@@ -306,7 +306,7 @@ if (typeof module === 'object' && module.exports) {
         reset.hidden = false;
         patchBtn.hidden = true;
         say('Done. ' + (addPoly ? 'Sound Generator (4 voices' +
-            (addWaves ? ', 17 new waves, envelopes, v9.5)' : ')') : 'Base build without synth additions') +
+            (addWaves ? ', 17 new waves, envelopes, 34 scales, v9.6)' : ')') : 'Base build without synth additions') +
             ' has been patched into firmware ' + result.label + '. '
             + 'Download it and keep the name SP404MKII_APP1.bin.', 'ok');
         state.textContent = 'Complete';
