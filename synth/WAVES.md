@@ -1,10 +1,10 @@
 # Wave list and archived V3 DSP-budget notes
 
-**Current patcher: [Sound Generator v9.4 RAM](V9.md).** The type/name/DUTY table below
+**Current patcher: [Sound Generator v9.5 RAM](V9.md).** The type/name/DUTY table below
 still applies. The remaining V3 build/layout/test instructions are historical;
-they do not describe the currently published v9.4 overlay. Use `build_v9.py`
+they do not describe the currently published v9.5 overlay. Use `build_v9.py`
 for the current build. Running the legacy V3 command with `--web` intentionally
-replaces the published data with an older image; do not use it for v9.4.
+replaces the published data with an older image; do not use it for v9.5.
 
 ## Archived V3 candidate (hardware unverified)
 

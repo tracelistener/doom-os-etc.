@@ -37,6 +37,7 @@ typedef struct {
 EXPORT env_t env_slot[8];              /* 0..3 live voices, 4..7 REC export voices */
 EXPORT volatile u8 env_restart[8];     /* a stolen voice restarts its envelope */
 EXPORT volatile u8 env_fast[8];        /* all-stop: let the stock fade finish now */
+EXPORT volatile u8 env_quick[8];       /* stealing: that fade runs at QUICK x speed */
 EXPORT u32 env_age[4];                 /* note-on order, for choosing what to steal */
 EXPORT u32 env_serial;
 EXPORT volatile int stolen_source[8], stolen_note[8];
@@ -89,10 +90,20 @@ static int clamp16(float y) {
     return (int)y;
 }
 
+/* The stock release fade: +0x4c counts -200..199, gain (199-c)/400, and the
+ * voice ends once it has played c = 199. A stolen voice skips QUICK-1 extra
+ * steps per sample, so its fade takes 400/QUICK samples (2.8 ms). */
+#define QUICK 3
+
 /* r4 = voice state, r5 = sample after LEVEL and the stock fades. */
 EXPORT int env_stage(u8 *s, int x) {
     int i = slot_of((u32)s);
     if (i < 0) return (short)x;
+    if (env_quick[i] && s[0] && s[1]) {
+        volatile int *c = (volatile int *)(s + 0x4C);
+        int next = *c + (QUICK - 1);
+        if (*c < 199) *c = next < 199 ? next : 199;    /* never past 199: above it means "no fade" */
+    }
     env_t *e = &env_slot[i];
     volatile u32 *mark = (volatile u32 *)(s + 0x18C);
     int fresh = *mark == 0, steal = 0;
@@ -101,6 +112,7 @@ EXPORT int env_stage(u8 *s, int x) {
         u32 p = *(volatile u32 *)(s + 0x10);
         env_restart[i] = 0;
         env_fast[i] = 0;
+        env_quick[i] = 0;
         *mark = MARK;
         e->preset = p <= 9 ? (u8)p : 0;
         e->stage = e->fstage = ATTACK;
@@ -322,33 +334,44 @@ EXPORT void freq_event(u32 self, int id, int value, int flags) {
     if (!d[0] || d[1]) display_slot = held >= 0 ? (u8)held : 0;   /* show a note that moved */
 }
 
-/* Voice for a new note (pad or MIDI): an idle one first (voice 0 first; an
- * idle clone takes voice 0's settings), else the oldest fading voice, else the
- * oldest held one. Returns the index, | STOLEN when it was sounding, or -1. */
+/* An idle voice for a new note: a clone takes voice 0's settings. */
+static int take(int i) {
+    volatile u8 *v = voice(i);
+    env_quick[i] = 0;                           /* no longer reserved by a steal */
+    if (i) {
+        volatile u32 *dst = (volatile u32 *)v, *src = (volatile u32 *)SINGLETON;
+        *(volatile u16 *)v = 0;
+        for (int w = 1; w < 108; w++) dst[w] = src[w];
+        dst[0] = src[0] & 0xFFFF0000u;
+    }
+    /* A TYPE change made while this voice was fading never swapped its
+     * sounding type; a new note always starts on the selected one. */
+    if (v[0x70] != v[0x71]) v[0x70] = v[0x71];
+    STOCK_RESET(v);
+    env_age[i] = ++env_serial;
+    display_slot = (u8)i;
+    return i;
+}
+
+typedef int (*delay_fn)(int ms);
+#define TK_DLY_TSK ((delay_fn)0x800D31EFu)     /* the stock note-on waits on a fading voice with this */
+
+/* Voice for a new note (pad or MIDI): an idle one first (voice 0 first), else
+ * the oldest fading voice, else the oldest held one. A sounding voice is faded
+ * out in 2.8 ms (QUICK) and then started like an idle one; cutting it short in
+ * place froze its last sample into a thump. The stock note-on blocks the same
+ * way on a releasing voice (until it ends, plus 5 ms). A voice being stolen
+ * (env_quick) is reserved, so a pad and a MIDI note never both take it.
+ * Returns the index, | STOLEN when it was sounding, or -1. */
 #define STOLEN 0x100
 static int claim(void) {
-    for (int i = 0; i < 4; i++) {
-        volatile u8 *v = voice(i);
-        if (v[0]) continue;
-        if (i) {
-            volatile u32 *dst = (volatile u32 *)v, *src = (volatile u32 *)SINGLETON;
-            *(volatile u16 *)v = 0;
-            for (int w = 1; w < 108; w++) dst[w] = src[w];
-            dst[0] = src[0] & 0xFFFF0000u;
-        }
-        /* A TYPE change made while this voice was fading never swapped its
-         * sounding type; a new note always starts on the selected one. */
-        if (v[0x70] != v[0x71]) v[0x70] = v[0x71];
-        STOCK_RESET(v);
-        env_age[i] = ++env_serial;
-        display_slot = (u8)i;
-        return i;
-    }
+    for (int i = 0; i < 4; i++)
+        if (!voice(i)[0] && !env_quick[i]) return take(i);
     int best = -1;
     for (int pass = 0; pass < 2 && best < 0; pass++)
         for (int i = 0; i < 4; i++) {
             volatile u8 *v = voice(i);
-            if (v[0] && (pass ? !v[1] : v[1]) && (best < 0 || env_age[i] < env_age[best]))
+            if (v[0] && !env_quick[i] && (pass ? !v[1] : v[1]) && (best < 0 || env_age[i] < env_age[best]))
                 best = i;
         }
     if (best < 0) return -1;
@@ -356,8 +379,25 @@ static int claim(void) {
     if (v[3]) return -1;                        /* REC export owns it; stock ignores the note */
     if (!v[1] && field(v, 0x1AC) != -1)         /* a held pad note: swallow its note-off later */
         stolen_add(field(v, 0x1AC), field(v, 0x19C));
+    DISPATCH_OFF();
+    if (v[0] && !v[1]) {                        /* held: start the stock release fade */
+        int c = field(v, 0x4C);                 /* mid TYPE crossfade (gain |c|/200): same gain */
+        *(volatile int *)(v + 0x4C) = c <= 199 ? 199 - 2*(c < 0 ? -c : c) : -200;
+        v[1] = 1;
+    }
+    env_fast[best] = 1;                         /* presets: the fade runs, the envelope holds */
+    env_quick[best] = 1;
+    DISPATCH_ON();
+    for (int k = 0; v[0] && k < 30; k++) TK_DLY_TSK(1);
+    if (!v[0]) return take(best) | STOLEN;
+    /* The fade never finished (no audio running?): take it over in place. */
     u8 type = ((volatile u8 *)SINGLETON)[0x71];
     DISPATCH_OFF();
+    if (!v[0]) {                                /* it ended just now after all */
+        DISPATCH_ON();
+        return take(best) | STOLEN;
+    }
+    env_quick[best] = 0;
     if (v[1]) {                                 /* stop the fade, keep the voice sounding */
         *(volatile int *)(v + 0x4C) = 200;
         v[1] = 0;

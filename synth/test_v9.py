@@ -1,4 +1,4 @@
-"""Exact v9.4 publication guards; no flashing or native host execution."""
+"""Exact v9.5 publication guards; no flashing or native host execution."""
 import base64
 import json
 import os
@@ -15,22 +15,22 @@ class V9Publication(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.folder = Path(os.environ.get('DOOM_V9_APP1',
-            build.REPO/'out'/'doom-poly-waves-v9.4-ram'/'SP404MKII_APP1.bin'))
+            build.REPO/'out'/'doom-poly-waves-v9.5-ram'/'SP404MKII_APP1.bin'))
         cls.image = cls.folder.read_bytes()
         cls.info = build_v9.verified_sources()
         cls.stock = Path(os.environ['DOOM_STOCK_APP1']).read_bytes()
         _, cls.base = build.build(cls.stock)
 
     def test_exact_target_and_stock_app0(self):
-        build.require_hash(self.image, build_v9.EXPECTED_SHA, 'v9.4 target')
+        build.require_hash(self.image, build_v9.EXPECTED_SHA, 'v9.5 target')
         self.assertEqual(len(self.image), build_v9.EXPECTED_SIZE)
         build.require_hash(self.folder.with_name('SP404MKII_APP0.bin').read_bytes(),
                            build.APP0_SHA, 'stock APP0')
 
     def test_source_and_metadata_guards(self):
-        self.assertEqual(self.info['revision'], 'v9.4-ram')
+        self.assertEqual(self.info['revision'], 'v9.5-ram')
         self.assertEqual(self.info['execution'], 'sdram-gap')
-        self.assertEqual(self.info['status'], 'hardware-test-in-progress')
+        self.assertEqual(self.info['status'], 'hardware-unverified')
         self.assertEqual(self.info['hardware_validation']['coverage'], 'none')
         self.assertEqual(self.info['hardware_validation']['cpu_headroom'], 'unmeasured')
         self.assertEqual(len(self.info['env_presets']), 10)
@@ -51,7 +51,7 @@ class V9Publication(unittest.TestCase):
         before = destination.read_bytes()
         cases = [(self.stock, self.image, self.info),
                  (self.base, self.image[:-1], self.info)]
-        for key, wrong in [('size', 0), ('sha256', '00'*32), ('revision', 'v9.1-ram')]:
+        for key, wrong in [('size', 0), ('sha256', '00'*32), ('revision', 'v9.4-ram')]:
             cases.append((self.base, self.image, dict(self.info, **{key: wrong})))
         for source, target, info in cases:
             with self.subTest(info=info['revision'], size=len(target)):

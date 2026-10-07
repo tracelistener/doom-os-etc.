@@ -8,7 +8,8 @@ filter envelopes and voice stealing.
 - Released notes ring out for the preset's release time. All-stop still cuts
   everything with the stock ~8 ms fade, long releases included.
 - A fifth note no longer gets dropped: it takes the oldest fading voice, else
-  the oldest held one, with a 2 ms declick. The stolen note's later note-off is
+  the oldest held one; v9.5 fades it out in 2.8 ms before a fresh start. A 30 ms
+  no-audio timeout uses the older in-place de-click fallback. The later note-off is
   ignored, so it cannot release another note.
 Everything else is v8: the 17 waves with raw DUTY grit, loudness tables, quiet
 Pulse/Noise, the OCT note-off fallback, the layout in unused SDRAM.
@@ -39,7 +40,7 @@ import build_v7 as v7b  # noqa: E402  (also sets up the v3-v6 pipeline modules)
 v7b.v4b.HERE = v7b.v6b.HERE = HERE
 v3, v4b, v5b, v6b, v4, v2 = v7b.v3, v7b.v4b, v7b.v5b, v7b.v6b, v7b.v4, v7b.v3.v2
 load, call, jump = v3.load, v3.call, v3.jump
-OUT = ROOT / 'firmware' / 'doom-poly-waves-v9.4-ram'   # v9.3 + scale pads, MIDI poly, REC fixes
+OUT = ROOT / 'firmware' / 'doom-poly-waves-v9.5-ram'   # v9.4 + click-free voice stealing
 V8_MANIFEST = ROOT / 'firmware' / 'doom-poly-waves-v8-ram' / 'manifest.json'
 STOCK = ROOT / 'firmware' / 'v552' / 'sp404mk2_sys_v552' / 'SP404MKII_APP1.bin'
 CODE_BASE = v6b.CODE_BASE
@@ -167,7 +168,7 @@ def compile_arm():
     needed = {'wave_output', 'wave_name', 'wave_eval', 'wave_core', 'env_stage', 'env_name',
               'note_event', 'export_mix', 'freq_get', 'freq_event', 'display_voice', 'display_slot',
               'midi_event', 'kb_pad_note', 'kb_in_scale', 'kb_pad_rel',
-              'env_fast', 'env_slot', 'env_restart', 'env_age', 'stolen_valid'}
+              'env_fast', 'env_quick', 'env_slot', 'env_restart', 'env_age', 'stolen_valid'}
     if not needed <= set(symbols):
         raise ValueError(f'module exports missing: {sorted(needed - set(symbols))}')
     (folder / 'waves.bin').write_bytes(blob)
@@ -370,10 +371,21 @@ def build_image(module, symbols, base=None):
     return image, info
 
 
-README = """DOOM/poly-v4 + 17 Wave Lab waves, v9.4 (RAM, no memory taken) -- 2026-10-07
+README = """DOOM/poly-v4 + 17 Wave Lab waves, v9.5 (RAM, no memory taken) -- 2026-10-07
 ============================================================================
 
-Built by the Claude session (waves_v9_ram/build_v9.py). v9.4 = v9.3 plus:
+Built by the Claude session (waves_v9_ram/build_v9.py). v9.5 = v9.4 plus one fix
+from your v9.4 hardware test:
+
+- No click when a note takes a busy voice (all four sounding, e.g. letting go
+  of one note of a chord and playing another while it still rings out). The
+  voice used to be cut short in place: the old note stopped dead and its last
+  sample decayed as a thump under the new note. Now the old note fades out in
+  2.8 ms (the stock release fade, three times faster) and the new note starts
+  cleanly on the free voice, about 3 ms later. Stock does the same kind of wait
+  when you retrigger a releasing note. MIDI IN steals the same way.
+
+v9.4 = v9.3 plus:
 
 - Scale pads. With a SCALE other than Chrom, the 16 pads walk the scale
   instead of the semitones: no dark out-of-scale pads, and one bank covers
@@ -448,8 +460,8 @@ Files (use BOTH, together):
   SP404MKII_APP0.bin  {app0_size:,} bytes  SHA-256 {app0_sha}  (Roland stock)
 
 Status: verified in emulation (waves_v9_ram/test_v9.py), including REC through
-the real stock exporter. v9.1 passed your hardware test; v9.4 is NOT run on
-hardware yet. Roll back with doom-poly-waves-v9.3-ram or v9.1-ram.
+the real stock exporter. v9.1 passed your hardware test; v9.5 is NOT run on
+hardware yet. Roll back with doom-poly-waves-v9.4-ram or v9.1-ram.
 """
 
 
@@ -468,7 +480,7 @@ def main():
     OUT.mkdir(parents=True)
     (OUT / 'SP404MKII_APP1.bin').write_bytes(image)
     (OUT / 'SP404MKII_APP0.bin').write_bytes(app0)
-    info.update(revision='v9.4-ram', status='hardware-unverified', execution='sdram-gap',
+    info.update(revision='v9.5-ram', status='hardware-unverified', execution='sdram-gap',
                 symbols=symbols, base_sha256=v3.BASE_SHA, sha256=v3.sha(image), size=len(image),
                 module_sha256=v3.sha(module), wave_level_sha256=v8['wave_level_sha256'],
                 waves_c_sha256=v3.sha((HERE / 'waves.c').read_bytes()),
@@ -477,7 +489,7 @@ def main():
                 duty='raw (stock integer DUTY, no smoothing)', polyblep=[],
                 quiet_stock_types={'11': 'Pulse', '13': 'Noise1', '14': 'Noise2'}, quiet_gain_db=-6.02,
                 env_presets={name: {'volume': amp, 'filter': filt} for name, amp, filt in PRESETS},
-                stealing='oldest fading voice, else oldest held; 2 ms declick; stolen note-offs ignored',
+                stealing='oldest fading voice, else oldest held; 2.8 ms fade-out then fresh start; 30 ms no-audio timeout uses in-place declick; stolen note-offs ignored',
                 note_off='stolen notes ignored; exact note+source; else one non-releasing voice of that source',
                 sdram_gap=['0x83f7a424', '0x83ff0000'],
                 types={str(i + 15): n for i, n in enumerate(v3.TYPES)})
