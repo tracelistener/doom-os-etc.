@@ -47,7 +47,7 @@ other five non-OFF presets shape volume only. The filter tracks note pitch.
 Release tails continue after note-off, while all-stop still uses the short
 stock fade. ENV is a preset selector, not separate ADSR/filter parameter knobs.
 REC renders the held chord with its selected envelope, not a live performance.
-See [the complete v9.1 notes](synth/V9.md). No ZEN-Core/MC-101 engine is included.
+See [the complete v9.1 notes](synth/V9.md).
 
 ## How to install
 
