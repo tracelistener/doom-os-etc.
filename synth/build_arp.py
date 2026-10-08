@@ -133,7 +133,8 @@ def read_module(data, link_base, limit):
     return bytes(out), syms
 
 
-def compile_module(parent_symbols, folder, zig):
+def compile_module(parent_symbols, folder, zig, source_path=None):
+    source_path = source_path or HERE / 'arp.c'
     folder.mkdir(parents=True, exist_ok=True)
     links = ''.join(f'#define {key}_ADDRESS {parent_symbols[name] & ~1:#x}u\n' for key, name in
                     (('NOTE_EVENT', 'note_event'), ('MIDI_EVENT', 'midi_event'),
@@ -155,7 +156,7 @@ SECTIONS {{
     if subprocess.check_output([str(zig), 'version'], text=True).strip() != '0.13.0':
         raise ValueError('needs Zig 0.13.0')
     source = folder / 'arp.c'                       # compile LF-normalized source
-    source.write_bytes((HERE / 'arp.c').read_bytes().replace(b'\r\n', b'\n'))
+    source.write_bytes(source_path.read_bytes().replace(b'\r\n', b'\n'))
     subprocess.run([str(zig), 'cc', '-target', 'thumb-freestanding-eabihf', '-mcpu=cortex_m7+vfp4d16',
                     '-mfloat-abi=hard', '-O2', '-ffunction-sections', '-fdata-sections', '-nostdlib',
                     '-Wl,--no-undefined', '-Wl,--build-id=none', '-Wl,-e,arp_tick', '-Wl,-T,' + str(folder / 'arp.ld'),
@@ -229,10 +230,11 @@ def sites(sym, at, parent_symbols):
     ]
 
 
-def build(base, parent, folder, zig):
+def build(base, parent, folder, zig, source_path=None, revision='v9.9.2-arp'):
+    source_path = source_path or HERE / 'arp.c'
     if sha(base) != PARENT_SHA or parent['sha256'] != PARENT_SHA or parent['revision'] != 'v9.6-fixes':
         raise ValueError('expected the exact v9.6-fixes APP1 and its manifest')
-    code, sym = compile_module(parent['symbols'], folder, zig)
+    code, sym = compile_module(parent['symbols'], folder, zig, source_path)
     blob, at = bridges(sym)
     blob += code
     if MODULE_BASE + len(blob) > LIMIT:
@@ -261,15 +263,15 @@ def build(base, parent, folder, zig):
     struct.pack_into('<2I', out, 0x80, table - 0x80, len(out) - 0x80)
     image = bytes(out)
     info = dict(parent)
-    info.update(revision='v9.9.2-arp', parent_revision=parent['revision'], parent_sha256=PARENT_SHA,
+    info.update(revision=revision, parent_revision=parent['revision'], parent_sha256=PARENT_SHA,
                 sha256=sha(image), size=len(image), arp_code_base=MODULE_BASE, arp_code_file=file,
                 arp_code_size=len(blob), arp_symbols=sym, arp_bridges=at, arp_hooks=hooks,
                 arp_module_sha256=sha(blob),
-                arp_c_sha256=sha((HERE / 'arp.c').read_bytes().replace(b'\r\n', b'\n')),
+                arp_c_sha256=sha(source_path.read_bytes().replace(b'\r\n', b'\n')),
                 status='hardware-unverified', published=False, arp_menu=MENU,
                 tests='pending: synth/test_arp.py (workspace harness) and synth/test_v9_9_2.py')
     info['hardware_validation'] = {'source': 'none yet', 'date': None, 'coverage': 'none',
-                                   'detail': 'v9.9.2-arp candidate has not been tested on hardware',
+                                   'detail': f'{revision} candidate has not been tested on hardware',
                                    'cpu_headroom': 'unmeasured'}
     return image, info
 

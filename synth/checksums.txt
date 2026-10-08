@@ -22,3 +22,5 @@ DOOM-poly-v4-SoundGenerator-v9.5-ram  d0919e400c4232bc8d9a5fa0fc38d8af154e3e248c
 DOOM-poly-v4-SoundGenerator-v9.6-fixes  1b2d50e0cfe20b11bad9cdef6945ec24a14a60e772e56a02dd5478331e275cc9  2971568
 # V9.9.2: v9.6 + arpeggiator (VALUE menu: ARP RATE A.OCT HOLD BPM) following the project/bank tempo. 67 emulator checks; v9.9.2 hardware testing pending.
 DOOM-poly-v4-SoundGenerator-v9.9.2-arp  aab582ff45906a4497e59bebabeb4b3dee034f3e94a9dc287aa810ecc809608f  2984592
+# V9.9.3: arp BANK tempo follows the active sample bank, matching the native TEMPO SEL screen. 71 emulator checks; hardware testing pending.
+DOOM-poly-v4-SoundGenerator-v9.9.3-arp  e111c584655c4bc994de75bb05554dfbcc0cabf637e491e2cb3a31f652cd4704  2984640

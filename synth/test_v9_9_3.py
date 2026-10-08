@@ -1,6 +1,6 @@
-"""Archived v9.9.2 publication guards; the current overlay is v9.9.3.
+"""Exact current v9.9.3 (arpeggiator) publication guards, standalone within the fork.
 
-Set DOOM_STOCK_APP1 and DOOM_V992_APP1 to supplied input/tested output paths.
+Set DOOM_STOCK_APP1 and DOOM_V993_APP1 to supplied input/tested output paths.
 No network, device I/O or native DLL execution.
 """
 import base64
@@ -13,25 +13,25 @@ import build
 import build_arp
 import build_v8
 import publish_v9_6
-import publish_v9_9_2 as release
+import publish_v9_9_3 as release
 
-class V992Publication(unittest.TestCase):
+class V993Publication(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.path=Path(os.environ['DOOM_V992_APP1'])
+        cls.path=Path(os.environ['DOOM_V993_APP1'])
         cls.image=cls.path.read_bytes()
-        cls.info=json.loads((release.HERE/'v9_9_2_manifest.json').read_text())
+        cls.info=json.loads((release.HERE/'v9_9_3_manifest.json').read_text())
         cls.stock=Path(os.environ['DOOM_STOCK_APP1']).read_bytes()
         _,cls.base=build.build(cls.stock)
 
     def test_exact_target_and_stock_app0(self):
-        build.require_hash(self.image,release.EXPECTED_SHA,'v9.9.2 APP1')
+        build.require_hash(self.image,release.EXPECTED_SHA,'v9.9.3 APP1')
         self.assertEqual(len(self.image),release.EXPECTED_SIZE)
         build.require_hash(self.path.with_name('SP404MKII_APP0.bin').read_bytes(),build.APP0_SHA,'APP0')
 
     def test_frozen_sources_and_metadata(self):
         self.assertEqual(release.validate(self.image,self.info),self.info)
-        self.assertEqual(self.info['revision'],'v9.9.2-arp')
+        self.assertEqual(self.info['revision'],'v9.9.3-arp')
         self.assertEqual(self.info['parent_revision'],'v9.6-fixes')
         self.assertEqual(self.info['parent_sha256'],publish_v9_6.EXPECTED_SHA)
         self.assertEqual(self.info['execution'],'sdram-gap')
@@ -44,12 +44,17 @@ class V992Publication(unittest.TestCase):
         self.assertTrue(self.info['freq_bounds_fix'] and self.info['pad_noteoff_range_fix'])
         self.assertEqual(self.info['waves_c_sha256'],build_v8.SOURCE_LF_HASHES['waves.c'])
 
-    def test_archived_overlay_roundtrip(self):
-        container=build.make_overlay(self.base,self.image,'5.52+arp-v9.9.2')
+    def test_shipped_overlay_and_metadata(self):
+        text=(build.REPO/'waves-data.js').read_text()
+        overlay=re.search(r'window\.DOOMOS_WAVES_PATCH = "([A-Za-z0-9+/=]+)";',text)
+        self.assertIsNotNone(overlay)
+        container=base64.b64decode(overlay[1],validate=True)
         self.assertEqual(build.apply_container(container,self.base),self.image)
+        info=re.search(r'window\.DOOMOS_WAVES = (\{.*\});',text)
+        self.assertEqual(json.loads(info[1]),self.info)
 
     def test_corrupt_publication_rejected_before_writing(self):
-        destinations=[build.REPO/'waves-data.js',release.HERE/'v9_9_2_manifest.json']
+        destinations=[build.REPO/'waves-data.js',release.HERE/'v9_9_3_manifest.json']
         before=[p.read_bytes() for p in destinations]
         cases=[(self.stock,self.image,self.info),(self.base,self.image[:-1],self.info)]
         for key,value in [('sha256','00'*32),('size',0),('revision','v9.9.1-arp'),
@@ -79,6 +84,6 @@ class V992Publication(unittest.TestCase):
 
     def test_release_hash_in_checksums(self):
         text=(release.HERE/'checksums.txt').read_text()
-        self.assertIn(f'DOOM-poly-v4-SoundGenerator-v9.9.2-arp  {release.EXPECTED_SHA}  {release.EXPECTED_SIZE}',text)
+        self.assertIn(f'DOOM-poly-v4-SoundGenerator-v9.9.3-arp  {release.EXPECTED_SHA}  {release.EXPECTED_SIZE}',text)
 
 if __name__=='__main__': unittest.main()

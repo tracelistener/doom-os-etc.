@@ -4,7 +4,7 @@
     python repo/doom-os-etc/synth/test_arp.py CANDIDATE PARENT        (fork copy, from sp404mk2)
 
 CANDIDATE: folder with the arp build's SP404MKII_APP1.bin and manifest.json (default
-firmware/doom-poly-waves-v9.9.2-arp); PARENT: the v9.6-fixes folder it was built on
+firmware/doom-poly-waves-v9.9.3-arp); PARENT: the v9.6-fixes folder it was built on
 (default firmware/doom-poly-waves-v9.6-fixes). Needs the sp404mk2 workspace's emulator
 harness (waves_v9_ram/test_v9.py and analysis/) and .poly_vendor on PYTHONPATH.
 
@@ -15,7 +15,7 @@ harness (waves_v9_ram/test_v9.py and analysis/) and .poly_vendor on PYTHONPATH.
    the SG screen, VALUE -/+ (bounds, stock items 0..5 dispatch unchanged), screen update.
 4. Arp engine through the real render loop and pad/MIDI paths: step and gate timing at
    the project BPM without drift, every motif, A.OCT, HOLD/latch, tempo and RATE changes,
-   the tempo source (project, the bank on the pads, override, MIDI clock, pattern),
+   the tempo source (project, the active sample bank, override, MIDI clock, pattern),
    busy voices taken with the quick fade, page changes, ARP on/off with nothing stuck.
 5. CPU per render block; zero flash access.
 No RTOS, peripherals, screen or real timing.
@@ -57,7 +57,8 @@ def main(candidate, parent):
     SYM = MAN['arp_symbols']
     KB, PAGE_ID, SG, SETTINGS = 0x80591C48, 0x80245880, 0x1E, 0x82E01144
     PAD_TEMPO, TEMPO_GET = 0x80047DD0, 0x800D5640           # stock: tempo for a pad's samples; current tempo
-    PADSEL, CUR_BANK = 0x82DFFC88, 0x82DFFF44                # pad-select state; its setting 0x7a (the bank)
+    CUR_BANK = 0x82E2CD1C                                    # active sample bank: project parameter 0
+    DIALOG_BANK = 0x82DFFF44                                 # independent pad-selection dialog bank
     BUF, OBJ = 0x30014000, 0x30018000
     FLASH, COPY = 0x60080000, 0x600800E4
     failures, machines = [], []
@@ -514,6 +515,7 @@ def main(candidate, parent):
         params.clear()
         params.update(values)
         put(g, CUR_BANK, bank)
+        put(g, DIALOG_BANK, 0)                              # stale dialog bank must not determine tempo
         put(g, PADOBJ + 0x50, 1 if override else 0)
         put(g, PADOBJ + 0x90, override)
         g.uc.mem_write(EXT_SYNC, bytes([1 if clock else 0]))
@@ -532,21 +534,21 @@ def main(candidate, parent):
     turned = [run_from(g, site, {UC_ARM_REG_R0: 10, UC_ARM_REG_R4: KB}, (0x8015CC84, 0x8015C5D8))
               for site in (0x8015C7F4, 0x8015C85C)]
     after = (get(g, 'arp_mode'), get(g, 'arp_rate'), get(g, 'arp_oct'), get(g, 'arp_hold'))
-    pick = Fast(V97)                                           # setting 0x7a through the stock getter
+    pick = Fast(V97)                                           # project parameter 0 through its native getter
     machines.append(pick)
     put(pick, CUR_BANK, 7)
-    bank_setting = pick.call(0x800E26D0, PADSEL, 0x7A, 0)
+    bank_setting = pick.call(0x800DDA38, PADOBJ, 0, -1)
     untouched = all(bytes(g.uc.mem_read(a, n)) == bytes(Fast(V96).uc.mem_read(a, n))
-                    for a, n in ((TEMPO_GET, 0x96), (PAD_TEMPO, 0x9C), (0x800E2970, 8)))
+                    for a, n in ((TEMPO_GET, 0x96), (PAD_TEMPO, 0x9C), (0x800DDA38, 0x46), (0x800155D0, 0x14), (0x800DC748, 4)))
     check(readout == {'project': ('140.0', 14000), 'bank C': ('96.0', 9600), 'bank J': ('172.5', 17250),
                       'override': ('123.4', 12345), 'MIDI clock': ('128.5', 12850), 'pattern': ('110.0', 11000),
                       'no bank': ('90.0', 9000), 'too slow': ('!50', 12000)}
           and bank_asked['bank C'] == [0x23] and bank_asked['bank J'] == [0x2A] and bank_asked['no bank'] == [0x21]
-          and stock_says == 9000 and bank_setting == 7 and CUR_BANK == PADSEL + 0x2BC and untouched
+          and stock_says == 9000 and bank_setting == 7 and CUR_BANK == 0x82E2CD08 + 0x14 and untouched
           and turned == [0x8015CC84] * 2 and before == after,
-          'the arp follows the tempo BPM-synced samples in the bank on the pads follow, through the SP\'s own '
+          'the arp follows the tempo BPM-synced samples in the active sample bank follow, through the SP\'s own '
           'untouched code: PROJECT BPM (140.0), or that bank\'s BPM in BANK mode (bank C 96.0, bank J 172.5 - '
-          'not the last selected pad\'s bank A, 90, as v9.9.1), an override (123.4), the MIDI clock (128.5), a '
+          'not the stale dialog bank or last selected pad\'s bank A, 90), an override (123.4), the MIDI clock (128.5), a '
           'playing pattern (110.0); never the REC BPM (90) the plain call reports in the SG; the read-only BPM '
           'item shows it, raw "!50" when unusable')
 
@@ -617,7 +619,7 @@ def main(candidate, parent):
 if __name__ == '__main__':
     firmware = workspace() / 'firmware'
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument('candidate', type=Path, nargs='?', default=firmware / 'doom-poly-waves-v9.9.2-arp')
+    ap.add_argument('candidate', type=Path, nargs='?', default=firmware / 'doom-poly-waves-v9.9.3-arp')
     ap.add_argument('parent', type=Path, nargs='?', default=firmware / 'doom-poly-waves-v9.6-fixes')
     args = ap.parse_args()
     sys.exit(main(args.candidate.resolve(), args.parent.resolve()))

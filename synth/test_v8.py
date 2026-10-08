@@ -46,7 +46,7 @@ class V8Publication(unittest.TestCase):
     def test_archived_v8_overlay_roundtrip(self):
         stock = Path(os.environ['DOOM_STOCK_APP1']).read_bytes()
         _, base = build.build(stock)
-        # The live page now ships v9.9.2; v8 remains an archived reproducible build.
+        # The live page now ships v9.9.3; v8 remains an archived reproducible build.
         overlay = build.make_overlay(base, self.image, '5.52+waves-v8')
         self.assertEqual(build.apply_container(overlay, base), self.image)
 

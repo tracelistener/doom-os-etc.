@@ -1,10 +1,10 @@
-# Sound Generator v9.9.2: arpeggiator — 2026-10-07
+# Sound Generator v9.9.3: arpeggiator BANK-tempo fix — 2026-10-07
 
-Current web patcher release: **v9.9.2-arp** = [v9.6-fixes](SCALES.md) plus an
+Current web patcher release: **v9.9.3-arp** = [v9.6-fixes](SCALES.md) plus an
 arpeggiator after the MC-101's, in the Sound Generator VALUE menu. APP1:
-2,984,592 bytes; SHA-256
-`aab582ff45906a4497e59bebabeb4b3dee034f3e94a9dc287aa810ecc809608f`. APP0 is
-unchanged stock. The exact v9.9.2 build is not yet hardware-tested; see
+2,984,640 bytes; SHA-256
+`e111c584655c4bc994de75bb05554dfbcc0cabf637e491e2cb3a31f652cd4704`. APP0 is
+unchanged stock. The exact v9.9.3 build is not yet hardware-tested; see
 [hardware status](#hardware-status). CPU headroom remains unmeasured.
 
 ## Using it
@@ -39,8 +39,8 @@ The arp follows the tempo that BPM-synced samples in the current bank follow,
 read with the SP's own code (nothing in it is patched):
 
 - the PROJECT BPM when the tempo is set to PROJECT;
-- the bank's own BPM when it is set to BANK, for the bank on the pads (the bank
-  the tempo screen's BANK buttons pick and TAP TEMPO sets);
+- the active sample bank's own BPM when it is set to BANK, matching the
+  normal TEMPO SEL screen opened with SHIFT + pad 11;
 - an active tempo override;
 - the MIDI clock's tempo when synced to external clock;
 - a playing pattern's tempo.
@@ -49,15 +49,23 @@ It reads the tempo when you press a key, change an arp setting, or the Sound
 Generator screen updates. The arp runs free from the first key: it is not
 locked to the pattern sequencer's beat grid.
 
-Technically: v9.9.2 reads setting 0x7a of the pad-select state at `0x82dffc88`
-(the bank; the stock getter's case is a plain load of `+0x2bc`) and calls the
-stock function at `0x80047dd0` with the bank's first pad. The sample voices
-call that function with their own pad for BPM sync. v9.9.1 instead used the
-stock current-tempo function on a stand-in object, which takes the bank from
-the last selected pad: with the tempo set to BANK it read 90 when that pad sat
-in another bank. That path remains only as a fallback for an out-of-range bank
-number. Called plainly, that function returns the REC BPM in the Sound
-Generator (v9.9's fixed 90).
+v9.9.3 fixes a bank-selection mistake. The normal TEMPO SEL screen gets the
+active sample bank from project parameter 0 (`0x800dda38`, object
+`0x82e009d0`, stored at `0x82e2cd08 + 0x14`). v9.9.2 read parameter 0x7a of
+the pad-selection dialog state (`0x82dffc88 + 0x2bc`) instead. Those fields
+are independent: the dialog can still point to BANK A at 90 BPM while the
+normal tempo screen shows BANK C at 110 BPM.
+
+The new regression executes the real TEMPO SEL drawing code and native
+parameter getters, reproducing that mismatch on v9.9.2. The earlier test
+manually supplied the dialog bank and tempo values, so it missed the wrong
+bank source. v9.9.3 uses the same project-bank getter as the normal screen,
+then calls the unchanged sample-tempo resolver at `0x80047dd0` with that
+bank's first pad. Override, MIDI-clock and pattern-tempo behavior is retained.
+
+v9.9.1 used the last selected sample's bank. That path remains only as a
+fallback for an invalid active-bank number. No stock tempo getter is patched.
+The v9.9.2 C source remains frozen in `arp.c`; v9.9.3 uses `arp_v9_9_3.c`.
 
 ## Hardware status
 
@@ -66,15 +74,20 @@ Generator (v9.9's fixed 90).
 | v9.7 | Menu labels fit, ARP on stops held notes, step timing right. The tempo did not follow PROJECT/BANK, and notes resumed when re-entering the Sound Generator after leaving it (fixed in v9.8). |
 | v9.8 | Arp still not following the tempo. With the tempo at PROJECT 140, BPM-synced samples read 70. v9.8 hooked the SP's current-tempo function; v9.9 removed that hook. Whether the 70 persists has not been re-checked. |
 | v9.9 | BPM item read a fixed 90: the REC BPM (fixed in v9.9.1). |
-| v9.9.1 | BPM item matched TAP TEMPO with the tempo set to PROJECT; read 90 with BANK (fixed in v9.9.2). |
-| v9.9.2 | Not yet tested. |
+| v9.9.1 | BPM item matched TAP TEMPO with the tempo set to PROJECT; read 90 with BANK. |
+| v9.9.2 | The native-screen regression reproduces the BANK mismatch; its earlier emulator test missed it. |
+| v9.9.3 | Not yet hardware-tested. The reproduced bank-selection error is fixed in emulation. |
+
+The latest owner report says PROJECT follows correctly while BANK stays at
+90; the installed revision for that report was not confirmed. The failure
+has been independently reproduced on the exact published v9.9.2 image.
 
 ## How it is built
 
-`build_arp.py` compiles `arp.c` with Zig 0.13.0 into one new boot copy row:
-12,740 bytes at `0x83fa2000`, after v9.6's scale module and below
+`build_arp_v9_9_3.py` compiles `arp_v9_9_3.c` with Zig 0.13.0 using the shared
+builder into one new boot copy row: 12,788 bytes at `0x83fa2000`, after v9.6's scale module and below
 `0x83ff0000` (bridges first, then the C module). Existing code changes only at
-nine sites, each checked against its exact v9.6 instructions (83 bytes,
+nine sites, each checked against its exact v9.6 instructions (82 changed bytes,
 including the scatter-table header):
 
 | Address | Change |
@@ -101,28 +114,29 @@ unmodified official 5.52 firmware pair. No full Roland firmware is distributed.
 python -m pip install -r synth/requirements.txt
 python synth/build_v9.py /path/to/stock/SP404MKII_APP1.bin --zig /path/to/zig --out out/v9.5-parent
 python synth/build_scales.py out/v9.5-parent/SP404MKII_APP1.bin --zig /path/to/zig --out out/v9.6 --fixes
-python synth/build_arp.py out/v9.6/SP404MKII_APP1.bin --zig /path/to/zig --out out/v9.9.2
-python synth/publish_v9_9_2.py /path/to/stock/SP404MKII_APP1.bin --candidate out/v9.9.2/SP404MKII_APP1.bin
+python synth/build_arp_v9_9_3.py out/v9.6/SP404MKII_APP1.bin --zig /path/to/zig --out out/v9.9.3
+python synth/publish_v9_9_3.py /path/to/stock/SP404MKII_APP1.bin --candidate out/v9.9.3/SP404MKII_APP1.bin
 ```
 
 The last command verifies exact source/module/output hashes and generates
-`waves-data.js` plus `synth/v9_9_2_manifest.json`. It does not push to GitHub
+`waves-data.js` plus `synth/v9_9_3_manifest.json`. It does not push to GitHub
 or flash a device. The overlay applies to the same frozen browser base as v9.5
-and v9.6. For publication guards, set `DOOM_STOCK_APP1` and `DOOM_V992_APP1`
+and v9.6. For publication guards, set `DOOM_STOCK_APP1` and `DOOM_V993_APP1`
 to absolute paths, then run
-`python -m unittest discover -s synth -p test_v9_9_2.py -v` and
+`python -m unittest discover -s synth -p test_v9_9_3.py -v` and
 `node synth/test_browser.cjs /path/to/stock/SP404MKII_APP1.bin`.
 
 ## Tests
 
-67 Unicorn checks pass on the exact v9.9.2 image, run from the sp404mk2
+71 Unicorn checks pass on the exact v9.9.3 image, run from the sp404mk2
 workspace that holds the emulator harness (`waves_v9_ram/test_v9.py`):
 
 ```powershell
 $env:PYTHONPATH = "$PWD\.poly_vendor"
-python repo/doom-os-etc/synth/test_arp.py firmware/doom-poly-waves-v9.9.2-arp firmware/doom-poly-waves-v9.6-fixes
-python repo/doom-os-etc/synth/test_arp_regression.py firmware/doom-poly-waves-v9.9.2-arp
-python repo/doom-os-etc/synth/test_voice_fixes.py firmware/doom-poly-waves-v9.9.2-arp
+python repo/doom-os-etc/synth/test_arp.py firmware/doom-poly-waves-v9.9.3-arp firmware/doom-poly-waves-v9.6-fixes
+python repo/doom-os-etc/synth/test_arp_regression.py firmware/doom-poly-waves-v9.9.3-arp
+python repo/doom-os-etc/synth/test_voice_fixes.py firmware/doom-poly-waves-v9.9.3-arp
+python repo/doom-os-etc/synth/test_bank_tempo.py firmware/doom-poly-waves-v9.9.3-arp
 ```
 
 - `test_arp.py` (21): layout (only the nine sites change, one new copy row);
@@ -130,15 +144,19 @@ python repo/doom-os-etc/synth/test_voice_fixes.py firmware/doom-poly-waves-v9.9.
   steal with audio running, MIDI chord); the VALUE menu through the real stock
   code; step and gate timing at 120 BPM without drift; every motif, A.OCT,
   HOLD; tempo and RATE changes; busy voices; page changes; ARP on/off with
-  nothing left sounding; MIDI IN; the tempo source (PROJECT, the bank on the
-  pads rather than the last selected pad's bank, override, MIDI clock,
+  nothing left sounding; MIDI IN; the tempo source (PROJECT, the active sample
+  bank rather than the dialog or last selected pad's bank, override, MIDI clock,
   pattern); CPU per block (19 instructions with ARP OFF, ~85 while playing,
   against ~50,000 for the four voices); zero flash access.
 - `test_arp_regression.py` (32): the unchanged v9.5 suite, adapted only for the
   scale and arp copy rows and hooks, including the real boot loader.
 - `test_voice_fixes.py` (14): v9.6's FREQ bounds and pad note-off fixes.
+- `test_bank_tempo.py` (4): the reproduced 110-versus-90 BPM failure, all 100
+  active/dialog bank combinations, active-bank tempo changes, and PROJECT
+  mode on all ten banks. Runs native TEMPO SEL drawing code and parameter
+  getters, with graphics and button reads stubbed. No tempo/bank getter stubs.
 
-v9.9.2's tempo check fails on v9.9.1, which read the last selected pad's bank.
+The new native-screen check fails on v9.9.2 and passes on v9.9.3.
 Rebuilding from the fork's sources produces the identical APP1. These are
-emulator checks of real firmware code, without the RTOS, screen or real
+emulator checks of real firmware code, without the RTOS, display hardware or real
 timing; they are not a hardware test.
