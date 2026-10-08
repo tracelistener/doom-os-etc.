@@ -20,3 +20,5 @@ DOOM-poly-v4-SoundGenerator-v9.4-ram  7ee9d36eb5e86ad17deba3586ce5b8dc47401806ee
 DOOM-poly-v4-SoundGenerator-v9.5-ram  d0919e400c4232bc8d9a5fa0fc38d8af154e3e248c8e8697beadd732fe12ec9a  2969280
 # V9.6: 34 scales, FREQ intersection bounds and stored-pitch pad note-off. 59 emulator checks; hardware testing pending.
 DOOM-poly-v4-SoundGenerator-v9.6-fixes  1b2d50e0cfe20b11bad9cdef6945ec24a14a60e772e56a02dd5478331e275cc9  2971568
+# V9.9.2: v9.6 + arpeggiator (VALUE menu: ARP RATE A.OCT HOLD BPM) following the project/bank tempo. 67 emulator checks; v9.9.2 hardware testing pending.
+DOOM-poly-v4-SoundGenerator-v9.9.2-arp  aab582ff45906a4497e59bebabeb4b3dee034f3e94a9dc287aa810ecc809608f  2984592

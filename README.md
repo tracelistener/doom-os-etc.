@@ -2,8 +2,8 @@
 
 **[Open the synth patcher](https://tracelistener.github.io/doom-os-etc./)**
 
-Sound Generator **v9.6** adds four live voices, 17 new waveforms, nine
-volume/filter-envelope presets and 34 scale choices to the SP-404MKII. Firmware processing happens
+Sound Generator **v9.9.2** adds four live voices, 17 new waveforms, nine
+volume/filter-envelope presets, 34 scale choices and an arpeggiator to the SP-404MKII. Firmware processing happens
 locally in your browser; nothing is uploaded. Select the single Sound Generator
 option to include the mod. It is OFF by default; unchecked generates the base
 build without these synth additions.
@@ -16,6 +16,8 @@ build without these synth additions.
 - Nine timed ENV presets; four also have a resonant low-pass/filter envelope.
 - 34 scales (27 added in v9.6): with a SCALE set, the 16 pads play only scale notes, so one
   bank spans two to three octaves.
+- An arpeggiator (v9.9.2) in the Sound Generator VALUE menu: six motifs, seven
+  rates, octave range and HOLD, following the project or bank tempo.
 - MIDI IN on all four voices. When all four are busy, a new note takes one
   after a 2.8 ms fade-out, reducing chord-swap clicks in emulator tests.
 - Held-chord REC with fades at the end and when REC starts, voice
@@ -30,7 +32,7 @@ build without these synth additions.
 This does not turn normal sample pads or patterns into live synth pads.
 No ZEN-Core/MC-101 engine is included.
 
-## Sound Generator envelopes (v9.6)
+## Sound Generator envelopes (v9.9.2)
 
 In Sound Generator, select **ENV** and choose a preset. Play a new note after
 changing ENV: each voice takes its preset when the note starts. These replace
@@ -57,7 +59,7 @@ stock fade. ENV is a preset selector, not separate ADSR/filter parameter knobs.
 REC renders the held chord with its selected envelope, not a live performance.
 See [the envelope and previous v9.x notes](synth/V9.md).
 
-## Scale pads (v9.6)
+## Scale pads (v9.9.2)
 
 Set **SCALE** to anything other than Chrom and the 16 pads play only notes of
 that scale, one scale step per pad, from the bottom row (lowest) to the top
@@ -74,6 +76,29 @@ and more. [Full scale list and v9.6 fixes](synth/SCALES.md). Added choices act a
 Chrom outside Sound Generator. Extreme OCT settings can put pads outside the
 existing playable pitch range; no new save/load persistence has been established.
 
+## Arpeggiator (v9.9.2)
+
+Five items follow TUNE in the Sound Generator **VALUE** menu. Use them like
+the others: move to the item, enter edit, turn.
+
+| Item | Values |
+|---|---|
+| ARP | OFF, UP, DOWN, UP&DN, RAND, ORDER (as pressed), CHORD (all held notes each step) |
+| RATE | 1/4, 1/4T, 1/8, 1/8T, 1/16 (default), 1/16T, 1/32 of a beat |
+| A.OCT | -3..+3: also play the held notes that many octaves below/above |
+| HOLD | OFF, ON: latch; the next key after letting go of everything starts a new chord |
+| BPM | Read-only: the tempo the arp plays at |
+
+With ARP on, pads and MIDI IN feed the arp instead of playing directly. Each
+step is released half a step later, so the ENV preset shapes every step and
+release tails overlap across the four voices. The arp follows the tempo
+BPM-synced samples in the current bank follow: the PROJECT BPM, or the bank's
+own BPM when the tempo is set to BANK, the MIDI clock when synced, or a
+playing pattern's tempo. It runs free from the first key and is not locked to
+the pattern's beat grid. Turning ARP on stops notes you were playing directly;
+leaving the Sound Generator page stops the arp. Settings reset at power-on
+(ARP OFF). [Arpeggiator notes, build and tests](synth/ARP.md).
+
 ## How to install
 
 Use this fork's web patcher, which includes the new synth options:
@@ -85,7 +110,7 @@ You can also download this repository as a ZIP file (under the Code button), unz
 ### Manual installation
 
 1. Download the 5.52 system update from [Roland's support page](https://www.roland.com/global/support/by_product/sp-404mk2/updates_drivers/) and unzip it.
-2. Open [our patcher](https://tracelistener.github.io/doom-os-etc./) and load the stock `SP404MKII_APP1.bin`. Select Sound Generator for v9.6: four voices, 17 new waves, envelopes, 34 scales and FREQ/note-off fixes. The patcher only accepts official 5.52 and checks the result against [the fork's checksums](synth/checksums.txt).
+2. Open [our patcher](https://tracelistener.github.io/doom-os-etc./) and load the stock `SP404MKII_APP1.bin`. Select Sound Generator for v9.9.2: four voices, 17 new waves, envelopes, 34 scales, the arpeggiator and FREQ/note-off fixes. The patcher only accepts official 5.52 and checks the result against [the fork's checksums](synth/checksums.txt).
 3. Download the patched `SP404MKII_APP1.bin` and use it with the unchanged official 5.52 `SP404MKII_APP0.bin` for your test update. Back up first and keep your known-good update for rollback.
 4. Insert the card, hold **SHIFT** while you turn the SP on, and press the **VALUE** knob when the update menu appears.
 5. When the update is done, turn the SP off and on again.
@@ -94,15 +119,19 @@ To go back to the original firmware, just run the updater with the original Rola
 
 ## Status
 
-**v9.6** (2026-10-07) passes all 59 emulator checks and rebuilds byte-for-byte
-to the published image. These cover the 32 preceding v9.5 checks, 13 scale
-checks (26,112 pad cases), and 14 new voice-fix checks. Hardware testing is
-pending; CPU headroom remains unmeasured. The previous v9.1 build was reported
-working on hardware (coverage unspecified). This remains experimental;
-four loud voices can clip. Browser output is checked against the exact tested
+**v9.9.2** (2026-10-07) passes 67 emulator checks on the exact build and
+rebuilds byte-for-byte to the published image: 21 arpeggiator checks, the
+unchanged 32-check v9.5 suite and v9.6's 14 voice-fix checks. With ARP OFF it
+plays bit-identically to v9.6 in the emulator. On hardware, the arp's menu,
+held-note stop and step timing were confirmed with v9.7, and v9.9.1's BPM
+matched TAP TEMPO with the tempo set to PROJECT. With BANK it read 90, the BPM
+of the last selected pad's bank; v9.9.2 reads the bank on the pads. The exact
+v9.9.2 build is not yet hardware-tested; CPU headroom remains unmeasured. The
+v9.1 build was reported working on hardware (coverage unspecified). This
+remains experimental; four loud voices can clip. Browser output is checked against the exact tested
 APP1 hash; APP0 stays unchanged stock.
 
-See [the v9.6 changes, build and test notes](synth/SCALES.md),
+See [the arpeggiator notes](synth/ARP.md), [the v9.6 scale changes](synth/SCALES.md),
 [the wave list](synth/WAVES.md) and [integration notes](synth/README.md).
 Report synth bugs with the build, waveform, ENV preset, number of held notes
 and steps to reproduce. Preserve your backups and known-good firmware pair.

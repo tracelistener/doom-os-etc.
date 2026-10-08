@@ -1,11 +1,13 @@
 # v9.6 candidates and v9.5 audit — 2026-10-07
 
-Current web patcher release: v9.6-fixes. Hardware testing is still pending.
+The web patcher now ships [v9.9.2](ARP.md): v9.6-fixes plus an arpeggiator,
+built on the exact v9.6-fixes image below. v9.6-fixes hardware testing is still
+pending.
 No flashing or unrelated AUTO TRIG changes. Original firmware and frozen v9.5
 sources are preserved. The scale-only candidate leaves its module byte-exact;
 the newer fixes candidate changes only the two declared control-path hook spans.
 
-## Latest release: v9.6-fixes
+## v9.6-fixes release (parent of v9.9.2)
 
 Both bugs below are now fixed, together with all 34 scales:
 

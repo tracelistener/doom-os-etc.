@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tracelistener · SP-404MKII synth patcher</title>
-<meta name="description" content="Tracelistener's SP-404MKII Sound Generator v9.6 mod: four voices, 17 added waves, envelopes, 34 scales and FREQ/note-off fixes. Local browser patching; no firmware uploads.">
+<meta name="description" content="Tracelistener's SP-404MKII Sound Generator v9.9.2 mod: four voices, 17 added waves, envelopes, 34 scales, an arpeggiator and FREQ/note-off fixes. Local browser patching; no firmware uploads.">
 <style>
 
 :root {
@@ -166,9 +166,9 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
     <span class="n">01</span>
     <div class="body">
       <h1>SP-404MKII synth patcher</h1>
-      <p class="lede">Tracelistener's Sound Generator v9.6 mod: four live voices, 17 added waves, volume/filter-envelope presets and 34 scales. Your firmware stays in your browser; nothing is uploaded.</p>
+      <p class="lede">Tracelistener's Sound Generator v9.9.2 mod: four live voices, 17 added waves, volume/filter-envelope presets, 34 scales and an arpeggiator. Your firmware stays in your browser; nothing is uploaded.</p>
       <dl class="facts">
-        <div><dt>Synth build</dt><dd>v9.6</dd></div>
+        <div><dt>Synth build</dt><dd>v9.9.2</dd></div>
         <div><dt>Live voices</dt><dd>4</dd></div>
         <div><dt>Added waves</dt><dd>17</dd></div>
         <div><dt>ENV presets</dt><dd>9 + OFF</dd></div>
@@ -181,7 +181,7 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
       <div class="body">
         <p class="t">Compatible with stock firmware <strong data-doomos="firmware-list"></strong>. Select Sound Generator to include the mod; unchecked generates the base build without these synth additions.</p>
         <div id="doomos-patcher"></div>
-        <p class="t">v9.6 passes all 59 emulator checks; hardware testing is pending. CPU headroom remains unmeasured. Our <a class="inline" href="https://github.com/tracelistener/doom-os-etc./blob/main/synth/SCALES.md">v9.6 scales, fixes and test instructions</a> · <a class="inline" href="https://github.com/tracelistener/doom-os-etc./blob/main/synth/WAVES.md">wave list</a> · <a class="inline" href="https://github.com/tracelistener/doom-os-etc.">source code</a> · <a class="inline" href="https://tracelistener.github.io/sp404mk2-sound-generator/">Wave Lab preview</a></p>
+        <p class="t">v9.9.2 passes 67 emulator checks on the exact build; the arp's menu and timing were confirmed on hardware with earlier builds, v9.9.2 itself is not yet hardware-tested. CPU headroom remains unmeasured. Our <a class="inline" href="https://github.com/tracelistener/doom-os-etc./blob/main/synth/ARP.md">arpeggiator notes and test instructions</a> · <a class="inline" href="https://github.com/tracelistener/doom-os-etc./blob/main/synth/SCALES.md">v9.6 scales and fixes</a> · <a class="inline" href="https://github.com/tracelistener/doom-os-etc./blob/main/synth/WAVES.md">wave list</a> · <a class="inline" href="https://github.com/tracelistener/doom-os-etc.">source code</a> · <a class="inline" href="https://tracelistener.github.io/sp404mk2-sound-generator/">Wave Lab preview</a></p>
         <details class="env-guide">
           <summary>Envelope preset guide (ENV)</summary>
           <p class="t">In Sound Generator, choose ENV, then play a new note to hear the selected preset. Each voice takes its envelope when the note starts. Presets work on stock and added waves, four-voice playback and held-chord REC.</p>
@@ -202,6 +202,18 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
           <p class="t">Fixed: releasing pads after large OCT/ROOT/SCALE changes no longer causes the reproduced stuck-note bug. FREQ transposes fitting chords within shared bounds; a MIDI chord wider than 84 semitones stays unchanged when FREQ is adjusted, preserving its intervals.</p>
           <p class="t">MIDI IN plays all four voices, with the same voice stealing as the pads; a held MIDI note lights the pad with the same pitch. When all four voices are busy, a new note takes one after a 2.8 ms fade-out, so swapping notes in a chord does not click. Recordings with an ENV preset fade out at the end, and pressing REC while holding notes fades them instead of cutting them.</p>
         </details>
+        <details class="env-guide">
+          <summary>Arpeggiator guide (v9.9.2)</summary>
+          <p class="t">Five items follow TUNE in the Sound Generator VALUE menu; use them like the others (move to the item, enter edit, turn).</p>
+          <ul>
+            <li><strong>ARP:</strong> OFF, UP, DOWN, UP&amp;DN, RAND, ORDER (the order you pressed the keys), CHORD (all held notes every step).</li>
+            <li><strong>RATE:</strong> 1/4, 1/4T, 1/8, 1/8T, 1/16 (default), 1/16T, 1/32 of a beat.</li>
+            <li><strong>A.OCT:</strong> -3..+3, also plays the held notes that many octaves below/above.</li>
+            <li><strong>HOLD:</strong> latch; the arp keeps going after you let go, and the next key after letting go of everything starts a new chord.</li>
+            <li><strong>BPM:</strong> read-only, the tempo the arp plays at.</li>
+          </ul>
+          <p class="t">With ARP on, pads and MIDI IN feed the arp instead of playing directly. Each step is released half a step later, so the ENV preset shapes every step and release tails overlap. The arp follows the tempo BPM-synced samples in the current bank follow: the PROJECT BPM, the bank's own BPM when the tempo is set to BANK, the MIDI clock when synced, or a playing pattern's tempo. It runs free from the first key, not locked to the pattern's beat grid. Turning ARP on stops notes played directly; leaving the Sound Generator page stops the arp. Settings reset at power-on.</p>
+        </details>
       </div>
     </article>
     <article class="row">
@@ -210,7 +222,7 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
         <h2>Prepare your test update</h2>
         <ol class="steps">
           <li>Back up your samples, projects and settings. Keep the original Roland 5.52 update and your working build.</li>
-          <li>Load the unmodified stock 5.52 <code>SP404MKII_APP1.bin</code> above. Select Sound Generator for v9.6: four voices, all 17 new waves, envelopes/filter presets, 34 scales and FREQ/note-off fixes together.</li>
+          <li>Load the unmodified stock 5.52 <code>SP404MKII_APP1.bin</code> above. Select Sound Generator for v9.9.2: four voices, all 17 new waves, envelopes/filter presets, 34 scales, the arpeggiator and FREQ/note-off fixes together.</li>
           <li>Download the result as <code>SP404MKII_APP1.bin</code>. Use it with the unchanged official 5.52 <code>SP404MKII_APP0.bin</code> and your established SD-card update procedure.</li>
           <li>For chord REC, hold the chord while entering REC, then release and finish the normal destination workflow. Return to the known-good update for hangs, stuck notes or audio breakup.</li>
         </ol>
@@ -222,8 +234,8 @@ footer.site .note { flex-basis: 100%; font-size: 13px; }
     <p class="note">Unofficial; not affiliated with Roland or Klangfeld Labs. Base attribution: DOOM OS 0.6.1 ED5E by Quintus Oostendorp / Klangfeld Labs, MIT License retained in the repository. This page cannot flash your SP automatically.</p>
   </footer>
 </div>
-<script src="synth-data.js?v=waves-v9-6-1b2d50e0"></script>
-<script src="waves-data.js?v=waves-v9-6-1b2d50e0"></script>
-<script src="doomos-patcher.js?v=synth-v9-6-1b2d50e0"></script>
+<script src="synth-data.js?v=waves-v9-9-2-aab582ff"></script>
+<script src="waves-data.js?v=waves-v9-9-2-aab582ff"></script>
+<script src="doomos-patcher.js?v=synth-v9-9-2-aab582ff"></script>
 </body>
 </html>
